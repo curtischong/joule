@@ -27,8 +27,7 @@ lib/
 lib64/
 parts/
 sdist/
-var/
-*.egg-info/
+var/ *.egg-info/
 .installed.cfg
 *.egg
 
@@ -110,7 +109,8 @@ Local
 .idea/
 
 # VS Code
-.vscode/
+# commenting so debugger configs are allowed
+#.vscode/
 
 docs/_autosummary/
 env.yml
@@ -126,3 +126,6 @@ config.yml
 
 docs/autoapi/
 docs/tutorial/advanced/*.db
+
+/datasets/
+/joule.egg-info/
