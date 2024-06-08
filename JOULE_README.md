@@ -19,3 +19,6 @@ pip install -e .
 python -c "import torch; print(torch.__version__)"
 pip install torch-scatter torch-cluster torch-sparse -f https://data.pyg.org/whl/torch-2.3.0+cu121.html
 ```
+
+How to get jupyter lab working:
+https://chatgpt.com/share/63b7fae4-6c48-4231-a028-b01c9585ceec
