@@ -17,6 +17,7 @@ import glob
 import numpy as np
 from fairchem.core.common.flags import flags
 import argparse
+import time
 
 DATASET_DIR = "datasets/lmdb"
 
@@ -89,6 +90,7 @@ def create_lmdb(config, dataset_path, data_paths: list[str]):
     )
     idx = 0
 
+    start_time = time.time()
     for system in data_paths:
         # Extract Data object
         data_objects = read_trajectory_extract_features(a2g, system)
@@ -118,7 +120,9 @@ def create_lmdb(config, dataset_path, data_paths: list[str]):
         idx += 1
 
     db.close()
+    end_time = time.time()
     print(f"{dataset_path} lmdb created")
+    print(f"Time to create lmdb: {end_time - start_time}")
 
 def read_trajectory_extract_features(a2g, traj_path: str):
     traj = ase.io.read(traj_path, ":")
