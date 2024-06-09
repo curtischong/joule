@@ -38,7 +38,9 @@ def main():
 
     create_dataset(config, "1")
     create_dataset(config, "10")
-    create_dataset(config, "all")
+    create_dataset(config, "1000")
+    create_dataset(config, "10000")
+    # create_dataset(config, "all") # Too slow rn
 
 
 def create_dataset(config, dataset_type: str):
@@ -63,6 +65,12 @@ def get_range(n: int, dataset_type: str):
     # shuffle the system paths so when we generate the ranges, we ahve a good mix of all the datapoints
     if dataset_type == "all":
         return generate_ranges(n, split_frac=[0.7, 0.15, 0.15])
+    elif dataset_type == "10000":
+        return [[0, 10000], [10000, 20000], [20000, 30000]]
+    elif dataset_type == "1000":
+        return [[0, 1000], [1000, 2000], [2000, 3000]]
+    elif dataset_type == "100":
+        return [[0, 100], [100, 200], [200, 300]]
     elif dataset_type == "10":
         return [[0, 10], [10, 20], [20, 30]]
     elif dataset_type == "1":
@@ -81,7 +89,7 @@ def create_lmdb(config, dataset_path, data_paths: list[str]):
     )
 
     a2g = AtomsToGraphs(
-        max_neigh=config["model"]["max_num_neighbors"],
+        max_neigh=config["model"]["max_neighbors"],
         radius=config["model"]["cutoff"],
         r_energy=True,    # False for test data
         r_forces=True,    # False for test data
