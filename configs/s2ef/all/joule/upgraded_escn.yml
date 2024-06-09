@@ -22,7 +22,7 @@ dataset:
     src: datasets/lmdb/mace_1_val.lmdb
 
 model:
-  name: escn
+  name: upgraded_escn
   # num_layers: 12
   num_layers: 4
   max_neighbors: 20
