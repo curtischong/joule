@@ -30,31 +30,39 @@ def main():
     # assert len(duplicates_warning) == 0, "Duplicate keys found in config file"
     assert len(duplicates_error) == 0, "Errors found in config file"
 
-
-
     system_paths = get_traj_files("datasets/mptrj-gga-ggapu/mptrj-gga-ggapu")
+    np.random.shuffle(system_paths)
     n = len(system_paths)
     print(f"found {n} systems")
 
-    # shuffle the system paths so when we generate the ranges, we ahve a good mix of all the datapoints
-    np.random.shuffle(system_paths)
-
-    # ranges = generate_ranges(n, split_frac=[0.7, 0.15, 0.15])
-    # test ranges:
-    ranges = [[0, 10], [10, 20], [20, 30]]
+    dataset_type = "10"
+    ranges = get_range(n, dataset_type)
 
     train_paths = system_paths[ranges[0][0]:ranges[0][1]]
     val_paths = system_paths[ranges[1][0]:ranges[1][1]]
     test_paths = system_paths[ranges[2][0]:ranges[2][1]]
-
     print(f"train len: {len(train_paths)}, val len: {len(val_paths)}, test len: {len(test_paths)}")
-    create_lmdb(config, "mace_val", val_paths)
-    create_lmdb(config, "mace_test", test_paths)
-    create_lmdb(config, "mace_train", train_paths) # train last since it'll be the slowest
+
+    db_name = f"datasets/lmdb/mace_{dataset_type}"
+    create_lmdb(config, f"{db_name}_val", val_paths)
+    create_lmdb(config, f"{db_name}_test", test_paths)
+    create_lmdb(config, f"{db_name}_train", train_paths) # train last since it'll be the slowest
+
+def get_range(n: int, dataset_type: str):
+    # shuffle the system paths so when we generate the ranges, we ahve a good mix of all the datapoints
+    if dataset_type == "all":
+        return generate_ranges(n, split_frac=[0.7, 0.15, 0.15])
+    elif dataset_type == "10":
+        return [[0, 10], [10, 20], [20, 30]]
+    elif dataset_type == "1":
+        return [[0, 1], [1, 2], [2, 3]]
+    else:
+        raise ValueError(f"Unknown dataset type: {dataset_type}")
+
 
 def create_lmdb(config, dataset_name, system_paths: list[str]):
     db = lmdb.open(
-        "sample_CuCO.lmdb",
+        f"{dataset_name}.lmdb",
         map_size=1099511627776 * 2, # two terabytes is the max size of the db
         subdir=False,
         meminit=False,

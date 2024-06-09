@@ -6,7 +6,7 @@ includes:
 dataset:
   train:
     format: lmdb
-    src: data/s2ef/all/train/ # why is this not pointing to a specific file?
+    src: datasets/lmdb/mace10_train # why is this not pointing to a specific file?
     key_mapping:
       y: energy
       force: forces
@@ -19,7 +19,7 @@ dataset:
           mean: 0
           stdev: 2.887317180633545
   val:
-    src: data/s2ef/all/val_id/
+    src: datasets/lmdb/mace10_val
 
 loss_functions:
   - energy:
