@@ -30,17 +30,17 @@ def main():
     # assert len(duplicates_warning) == 0, "Duplicate keys found in config file"
     assert len(duplicates_error) == 0, "Errors found in config file"
 
-    system_paths = get_traj_files("datasets/mptrj-gga-ggapu/mptrj-gga-ggapu")
-    np.random.shuffle(system_paths)
-    n = len(system_paths)
+    data_paths = get_traj_files("datasets/mptrj-gga-ggapu/mptrj-gga-ggapu")
+    np.random.shuffle(data_paths)
+    n = len(data_paths)
     print(f"found {n} systems")
 
     dataset_type = "10"
     ranges = get_range(n, dataset_type)
 
-    train_paths = system_paths[ranges[0][0]:ranges[0][1]]
-    val_paths = system_paths[ranges[1][0]:ranges[1][1]]
-    test_paths = system_paths[ranges[2][0]:ranges[2][1]]
+    train_paths = data_paths[ranges[0][0]:ranges[0][1]]
+    val_paths = data_paths[ranges[1][0]:ranges[1][1]]
+    test_paths = data_paths[ranges[2][0]:ranges[2][1]]
     print(f"train len: {len(train_paths)}, val len: {len(val_paths)}, test len: {len(test_paths)}")
 
     db_name = f"datasets/lmdb/mace_{dataset_type}"
@@ -60,9 +60,9 @@ def get_range(n: int, dataset_type: str):
         raise ValueError(f"Unknown dataset type: {dataset_type}")
 
 
-def create_lmdb(config, dataset_name, system_paths: list[str]):
+def create_lmdb(config, dataset_path, data_paths: list[str]):
     db = lmdb.open(
-        f"{dataset_name}.lmdb",
+        f"{dataset_path}.lmdb",
         map_size=1099511627776 * 2, # two terabytes is the max size of the db
         subdir=False,
         meminit=False,
@@ -79,7 +79,7 @@ def create_lmdb(config, dataset_name, system_paths: list[str]):
     )
     idx = 0
 
-    for system in system_paths:
+    for system in data_paths:
         # Extract Data object
         data_objects = read_trajectory_extract_features(a2g, system)
         initial_struc = data_objects[0]
@@ -108,7 +108,7 @@ def create_lmdb(config, dataset_name, system_paths: list[str]):
         idx += 1
 
     db.close()
-    print(f"{dataset_name} lmdb created")
+    print(f"{dataset_path} lmdb created")
 
 def read_trajectory_extract_features(a2g, traj_path: str):
     traj = ase.io.read(traj_path, ":")

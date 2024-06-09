@@ -6,7 +6,7 @@ includes:
 dataset:
   train:
     format: lmdb
-    src: datasets/lmdb/mace10_train # why is this not pointing to a specific file?
+    src: datasets/lmdb/mace_10_train.lmdb # Note: if the dataset is so large it won't fit into one lmdb file, point this to a directory containing multiple lmdb files
     key_mapping:
       y: energy
       force: forces
@@ -19,7 +19,7 @@ dataset:
           mean: 0
           stdev: 2.887317180633545
   val:
-    src: datasets/lmdb/mace10_val
+    src: datasets/lmdb/mace_10_val.lmdb
 
 loss_functions:
   - energy:
