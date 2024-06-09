@@ -27,7 +27,9 @@
             "program": "scripts/create_mace_dataset_lmdb.py",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "args": [],
+            "args": [
+                "--config-yml=configs/s2ef/all/joule/upgraded_scn.yml",
+            ],
         },
     ]
 }

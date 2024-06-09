@@ -1,4 +1,4 @@
-from fairchem.core.common.utils import build_config
+from fairchem.core.common.utils import build_config, load_config
 from fairchem.core.preprocessing import AtomsToGraphs
 from fairchem.core.datasets import LmdbDataset
 import ase.io
@@ -16,11 +16,20 @@ import os
 import glob
 import numpy as np
 from fairchem.core.common.flags import flags
+import argparse
 
 def main():
-    parser = flags.get_parser()
+    parser = argparse.ArgumentParser(
+        description="Graph Networks for Electrocatalyst Design"
+    )
+    parser.add_argument(
+        "--config-yml", type=str, help="pass in the config so we know the cutoff radius and max neighbors for the graph"
+    )
     args, override_args = parser.parse_known_args()
-    config = build_config(args, override_args)
+    config, duplicates_warning, duplicates_error = load_config(args.config_yml)
+    # assert len(duplicates_warning) == 0, "Duplicate keys found in config file"
+    assert len(duplicates_error) == 0, "Errors found in config file"
+
 
 
     system_paths = get_traj_files("datasets/mptrj-gga-ggapu/mptrj-gga-ggapu")
@@ -30,7 +39,10 @@ def main():
     # shuffle the system paths so when we generate the ranges, we ahve a good mix of all the datapoints
     np.random.shuffle(system_paths)
 
-    ranges = generate_ranges(n, split_frac=[0.7, 0.15, 0.15])
+    # ranges = generate_ranges(n, split_frac=[0.7, 0.15, 0.15])
+    # test ranges:
+    ranges = [[0, 10], [10, 20], [20, 30]]
+
     train_paths = system_paths[ranges[0][0]:ranges[0][1]]
     val_paths = system_paths[ranges[1][0]:ranges[1][1]]
     test_paths = system_paths[ranges[2][0]:ranges[2][1]]
@@ -50,8 +62,8 @@ def create_lmdb(config, dataset_name, system_paths: list[str]):
     )
 
     a2g = AtomsToGraphs(
-        max_neigh=config["model"]["max_neighbors"],
-        radius=config["model"]["max_radius"],
+        max_neigh=config["model"]["max_num_neighbors"],
+        radius=config["model"]["cutoff"],
         r_energy=True,    # False for test data
         r_forces=True,    # False for test data
         r_distances=False,
