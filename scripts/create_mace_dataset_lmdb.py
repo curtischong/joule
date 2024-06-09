@@ -29,7 +29,8 @@ def main():
     )
     args, override_args = parser.parse_known_args()
     config, duplicates_warning, duplicates_error = load_config(args.config_yml)
-    # assert len(duplicates_warning) == 0, "Duplicate keys found in config file"
+    if len(duplicates_warning) > 0:
+        print(f"Warning: Duplicate keys found in config file: {duplicates_warning}")
     assert len(duplicates_error) == 0, "Errors found in config file"
 
     os.makedirs(DATASET_DIR, exist_ok=True)
