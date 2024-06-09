@@ -1,0 +1,2 @@
+create_mace_dataset_lmdb:
+	python scripts/create_mace_dataset_lmdb.py

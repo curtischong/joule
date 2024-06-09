@@ -1,60 +1,67 @@
-from dataclasses import dataclass
-import multiprocessing
-from typing import List
+import subprocess
 from torch.utils.data import Dataset
-import h5py
-import numpy as np
 import torch
 from torch_geometric.data import Data
-
-from diffusion.d3pm import D3PM
-from diffusion.diffusion_helpers import VE_pbc
-
-from diffusion.atomic_number_table import (
-    atomic_numbers_to_indices,
-    get_atomic_number_table_from_zs,
-)
 from fairchem.core.common.registry import registry
+import numpy as np
+import ase
 
 
 @registry.register_dataset("mace")
-class AlexandriaDataset(Dataset):
+class MaceDataset(Dataset):
     def __init__(self, dataset_config):
         super().__init__()
         # self.unique_atomic_numbers = set()
         dataset_path = dataset_config["src"]
 
-        # self.configs = load_dataset(dataset_path)
-        # for config in self.configs:
-        #     self.unique_atomic_numbers.update(set(np.asarray(config.atomic_numbers)))
+        largest_filename_number = self._get_largest_file_number(dataset_path)
 
-        # self.z_table = get_atomic_number_table_from_zs(
-        #     [
-        #         self.unique_atomic_numbers,
-        #     ]
-        # )
-        # print(f"There are {len(self.z_table)} unique atomic numbers")
+        ranges = self._generate_ranges(largest_filename_number)
 
-        # print(
-        #     f"finished loading datasets {str(dataset_path)}. Found {len(self.configs)} entries"
-        # )
-        # # self.num_timesteps = model_attributes["num_timesteps"]
+        dataset_type = dataset_config["type"]
+        if dataset_type == "train":
+            indexes = np.arange(ranges[0])
+        elif dataset_type == "val": # calida
+            indexes = np.arange(ranges[1])
+        else:
+            raise f"unknown dataset type {dataset_type}"
+        
+        self.file_id_map = np.random.shuffle(indexes)
 
-        dataset_path = "/home/ubuntu/joule/datasets/mptrj-gga-ggapu/mptrj-gga-ggapu"
+    def _generate_ranges(self, n, split_frac=[0.7, 0.15, 0.15]):
+        assert sum(split_frac) == 1, "The split fractions must sum to 1."
+
+        ranges = []
+        start = 1 # the first file is starts at 1 NOT 0
+        
+        for frac in split_frac:
+            end = start + int(n * frac)
+            ranges.append((start, end))
+            start = end
+        
+        # Adjust the last range to ensure it covers any remaining items due to rounding
+        if end < n:
+            ranges[-1] = (ranges[-1][0], n)
+        
+        return ranges
+
+
+    def _get_filename_number(filename):
+        return filename[len("mp-"):][:-len(".extxyz")]
+
+    def _get_largest_file_number(self, dataset_path: str):
         result = subprocess.run(f"ls -S {dataset_path}| head -n 1", shell=True, capture_output=True, text=True)
 
         # Print the result
         largest_filename = result.stdout.strip()
-        def get_filename_number(filename):
-            return filename[len("mp-"):][:-len(".extxyz")]
-
-    # the first file is NOT 0. it starts at 1
-    def 
+        return self._get_filename_number(largest_filename)
 
     def __len__(self):
-        return len(self.configs)
+        return len(self.file_id_map)
 
     def __getitem__(self, idx: int):
+        file_id = self.file_id_map[idx]
+
         # default_dtype = torch.float64  # for some reason, the default dtype is float32 in this subprocess. so I set it explicitly
         default_dtype = torch.float32  # Doing this because equiformer uses float32 linear layers. I don't know why. But if I have precision issues, I'll probably change this. The only reason why I'm okay with float32 is because we're not doing molecular dynamics
         config = self.configs[idx]
