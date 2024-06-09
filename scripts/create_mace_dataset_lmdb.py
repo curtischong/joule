@@ -18,6 +18,8 @@ import numpy as np
 from fairchem.core.common.flags import flags
 import argparse
 
+DATASET_DIR = "datasets/lmdb"
+
 def main():
     parser = argparse.ArgumentParser(
         description="Graph Networks for Electrocatalyst Design"
@@ -30,12 +32,19 @@ def main():
     # assert len(duplicates_warning) == 0, "Duplicate keys found in config file"
     assert len(duplicates_error) == 0, "Errors found in config file"
 
+    os.makedirs(DATASET_DIR, exist_ok=True)
+
+    create_dataset(config, "1")
+    create_dataset(config, "10")
+    create_dataset(config, "all")
+
+
+def create_dataset(config, dataset_type: str):
     data_paths = get_traj_files("datasets/mptrj-gga-ggapu/mptrj-gga-ggapu")
     np.random.shuffle(data_paths)
     n = len(data_paths)
-    print(f"found {n} systems")
 
-    dataset_type = "1"
+    print(f"found {n} systems")
     ranges = get_range(n, dataset_type)
 
     train_paths = data_paths[ranges[0][0]:ranges[0][1]]
@@ -43,7 +52,7 @@ def main():
     test_paths = data_paths[ranges[2][0]:ranges[2][1]]
     print(f"train len: {len(train_paths)}, val len: {len(val_paths)}, test len: {len(test_paths)}")
 
-    db_name = f"datasets/lmdb/mace_{dataset_type}"
+    db_name = f"{DATASET_DIR}/mace_{dataset_type}"
     create_lmdb(config, f"{db_name}_val", val_paths)
     create_lmdb(config, f"{db_name}_test", test_paths)
     create_lmdb(config, f"{db_name}_train", train_paths) # train last since it'll be the slowest
