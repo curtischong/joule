@@ -6,20 +6,20 @@ includes:
 dataset:
   train:
     format: lmdb
-    src: datasets/lmdb/mace_10_train.lmdb # Note: if the dataset is so large it won't fit into one lmdb file, point this to a directory containing multiple lmdb files
+    src: datasets/lmdb/mace_1_train.lmdb # Note: if the dataset is so large it won't fit into one lmdb file, point this to a directory containing multiple lmdb files
     key_mapping:
       y: energy
       force: forces
-    transforms:
-      normalizer:
-        energy:
-          mean: -0.7554450631141663
-          stdev: 2.887317180633545
-        forces:
-          mean: 0
-          stdev: 2.887317180633545
+    # transforms:
+    #   normalizer:
+    #     energy:
+    #       mean: -0.7554450631141663
+    #       stdev: 2.887317180633545
+    #     forces:
+    #       mean: 0
+    #       stdev: 2.887317180633545
   val:
-    src: datasets/lmdb/mace_10_val.lmdb
+    src: datasets/lmdb/mace_1_val.lmdb
 
 loss_functions:
   - energy:
@@ -32,7 +32,8 @@ loss_functions:
 model:
   name: scn
   num_interactions: 16
-  hidden_channels: 1024
+  # hidden_channels: 1024
+  hidden_channels: 256
   sphere_channels: 128
   sphere_channels_reduce: 128
   num_sphere_samples: 128
@@ -67,6 +68,7 @@ optim:
     - 1000000
   warmup_steps: 100
   warmup_factor: 0.2
-  max_epochs: 12
+  # max_epochs: 12
+  max_epochs: 120000
   clip_grad_norm: 100
   ema_decay: 0.999

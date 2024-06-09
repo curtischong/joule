@@ -35,7 +35,7 @@ def main():
     n = len(data_paths)
     print(f"found {n} systems")
 
-    dataset_type = "10"
+    dataset_type = "1"
     ranges = get_range(n, dataset_type)
 
     train_paths = data_paths[ranges[0][0]:ranges[0][1]]
