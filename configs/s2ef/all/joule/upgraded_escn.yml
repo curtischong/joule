@@ -19,6 +19,7 @@ dataset:
     #       mean: 0
     #       stdev: 2.887317180633545
   val:
+    # src: datasets/lmdb/mace_1000_val.lmdb
     src: datasets/lmdb/mace_1_val.lmdb
 
 model:
@@ -53,7 +54,8 @@ optim:
     - 343750
   warmup_steps: 100
   warmup_factor: 0.2
-  max_epochs: 24
+  # max_epochs: 24
+  max_epochs: 2400000
   force_coefficient: 100
   energy_coefficient: 4
   clip_grad_norm: 20
