@@ -30,20 +30,17 @@ def main():
     # shuffle the system paths so when we generate the ranges, we ahve a good mix of all the datapoints
     np.random.shuffle(system_paths)
 
-    ranges = generate_ranges(n)
+    ranges = generate_ranges(n, split_frac=[0.7, 0.15, 0.15])
     train_paths = system_paths[ranges[0][0]:ranges[0][1]]
     val_paths = system_paths[ranges[1][0]:ranges[1][1]]
     test_paths = system_paths[ranges[2][0]:ranges[2][1]]
 
     print(f"train len: {len(train_paths)}, val len: {len(val_paths)}, test len: {len(test_paths)}")
-    create_lmdb(config, val_paths)
-    print("val lmdb created")
-    create_lmdb(config, test_paths)
-    print("test lmdb created")
-    create_lmdb(config, train_paths) # train last since it'll be the slowest
-    print("train lmdb created")
+    create_lmdb(config, "mace_val", val_paths)
+    create_lmdb(config, "mace_test", test_paths)
+    create_lmdb(config, "mace_train", train_paths) # train last since it'll be the slowest
 
-def create_lmdb(config, system_paths: list[str]):
+def create_lmdb(config, dataset_name, system_paths: list[str]):
     db = lmdb.open(
         "sample_CuCO.lmdb",
         map_size=1099511627776 * 2, # two terabytes is the max size of the db
@@ -91,6 +88,7 @@ def create_lmdb(config, system_paths: list[str]):
         idx += 1
 
     db.close()
+    print(f"{dataset_name} lmdb created")
 
 def read_trajectory_extract_features(a2g, traj_path: str):
     traj = ase.io.read(traj_path, ":")
@@ -121,5 +119,5 @@ def generate_ranges(n:int, split_frac=[0.7, 0.15, 0.15]):
         ranges[-1] = (ranges[-1][0], n)
     
     return ranges
-if __name__ == "main":
+if __name__ == "__main__":
     main()

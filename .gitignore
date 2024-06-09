@@ -128,4 +128,4 @@ docs/autoapi/
 docs/tutorial/advanced/*.db
 
 /datasets/
-/joule.egg-info/
+*joule.egg-info/
