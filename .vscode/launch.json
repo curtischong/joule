@@ -31,5 +31,16 @@
                 "--config-yml=configs/s2ef/all/joule/upgraded_scn.yml",
             ],
         },
+        {
+            "name": "pytest equiformerv2",
+            "type": "python",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "tests/core/models/test_equiformer_v2.py"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true
+        }
     ]
 }
