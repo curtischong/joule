@@ -12,6 +12,7 @@ import json
 import bz2
 from pymatgen.entries.computed_entries import ComputedStructureEntry
 from pymatgen.io.ase import AseAtomsAdaptor
+from ase.calculators.singlepoint import SinglePointCalculator
 
 from dataset_prep_common import get_range, parse_config
 
@@ -25,7 +26,7 @@ def main():
     create_dataset(config, "1")
     create_dataset(config, "10")
     create_dataset(config, "1000")
-    create_dataset(config, "10000")
+    # create_dataset(config, "10000")
     # create_dataset(config, "all") # Too slow rn
 
 
@@ -42,7 +43,7 @@ def create_dataset(config, dataset_type: str):
     test_entries = entries[ranges[2][0]:ranges[2][1]]
     print(f"train len: {len(train_entries)}, val len: {len(val_entries)}, test len: {len(test_entries)}")
 
-    db_name = f"{DATASET_DIR}/mace_{dataset_type}"
+    db_name = f"{DATASET_DIR}/alexandria_{dataset_type}"
     create_lmdb(config, f"{db_name}_val", val_entries)
     create_lmdb(config, f"{db_name}_test", test_entries)
     create_lmdb(config, f"{db_name}_train", train_entries) # train last since it'll be the slowest
@@ -117,11 +118,31 @@ def read_trajectory_extract_features(a2g, traj_path: str):
     return data_objects
 
 def get_entries():
-    IN_DIR = f"../datasets/alexandria"
+    IN_DIR = f"/home/ubuntu/joule/datasets/alexandria"
     filename = "alexandria_ps_004"
     with bz2.open(f"{IN_DIR}/{filename}.json.bz2", "rt", encoding="utf-8") as fh:
         data = json.load(fh)
-        entries = [AseAtomsAdaptor.get_atoms(ComputedStructureEntry.from_dict(i).structure) for i in data["entries"]]
+        entries = []
+        for i in data["entries"]:
+            computed_entry = ComputedStructureEntry.from_dict(i)
+            structure = computed_entry.structure
+            atoms = AseAtomsAdaptor.get_atoms(structure)
+            # forces = computed_entry.data.get('forces', None)  # Replace with actual forces if available
+            forces = []
+            for site in structure:
+                if "forces" in site.properties:
+                    forces.append(site.properties["forces"])
+                else:
+                    forces.append([None, None, None])  # If forces are not present for a site
+            # print(forces)
+            # forces = np.array(atoms.get_forces())
+            uncorrected_energy = computed_entry.energy
+            correction = computed_entry.correction
+            corrected_energy = uncorrected_energy + correction
+
+            calc = SinglePointCalculator(atoms, energy=corrected_energy, forces=forces)
+            atoms.set_calculator(calc)
+            entries.append(atoms)
     return entries
 
 if __name__ == "__main__":
