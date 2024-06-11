@@ -19,7 +19,7 @@ from fairchem.core.common.flags import flags
 import argparse
 import time
 
-from scripts.dataset_prep.dataset_prep_common import get_range, parse_config
+from dataset_prep_common import get_range, parse_config
 
 DATASET_DIR = "datasets/lmdb"
 
