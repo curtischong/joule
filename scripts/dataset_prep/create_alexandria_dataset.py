@@ -108,15 +108,6 @@ def create_lmdb(config, dataset_path, atoms: list[pymatgen.io.ase.MSONAtoms]):
     print(f"{dataset_path} lmdb created")
     print(f"Time to create lmdb: {end_time - start_time}")
 
-def read_trajectory_extract_features(a2g, traj_path: str):
-    traj = ase.io.read(traj_path, ":")
-    tags = traj[0].get_tags()
-    images = [traj[0], traj[-1]]
-    data_objects = a2g.convert_all(images, disable_tqdm=True)
-    data_objects[0].tags = torch.LongTensor(tags)
-    data_objects[1].tags = torch.LongTensor(tags)
-    return data_objects
-
 def get_entries():
     IN_DIR = f"/home/ubuntu/joule/datasets/alexandria"
     filename = "alexandria_ps_004"
