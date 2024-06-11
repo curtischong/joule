@@ -1,25 +1,19 @@
-from fairchem.core.common.utils import build_config, load_config
 from fairchem.core.preprocessing import AtomsToGraphs
-from fairchem.core.datasets import LmdbDataset
 import ase.io
-from ase.build import bulk
-from ase.build import fcc100, add_adsorbate, molecule
-from ase.constraints import FixAtoms
-from ase.calculators.emt import EMT
-from ase.optimize import BFGS
-import matplotlib.pyplot as plt
 import lmdb
 import pickle
 from tqdm import tqdm
 import torch
 import os
-import glob
 import numpy as np
-from fairchem.core.common.flags import flags
-import argparse
 import time
+import pymatgen
+import json
+import bz2
+from pymatgen.entries.computed_entries import ComputedStructureEntry
+from pymatgen.io.ase import AseAtomsAdaptor
 
-from scripts.dataset_prep.dataset_prep_common import get_range, parse_config
+from dataset_prep_common import get_range, parse_config
 
 DATASET_DIR = "datasets/lmdb"
 
@@ -36,25 +30,25 @@ def main():
 
 
 def create_dataset(config, dataset_type: str):
-    data_paths = get_traj_files("datasets/mptrj-gga-ggapu/mptrj-gga-ggapu")
-    np.random.shuffle(data_paths)
-    n = len(data_paths)
+    entries = get_entries()
+    np.random.shuffle(entries)
+    n = len(entries)
 
     print(f"found {n} systems")
     ranges = get_range(n, dataset_type)
 
-    train_paths = data_paths[ranges[0][0]:ranges[0][1]]
-    val_paths = data_paths[ranges[1][0]:ranges[1][1]]
-    test_paths = data_paths[ranges[2][0]:ranges[2][1]]
-    print(f"train len: {len(train_paths)}, val len: {len(val_paths)}, test len: {len(test_paths)}")
+    train_entries = entries[ranges[0][0]:ranges[0][1]]
+    val_entries = entries[ranges[1][0]:ranges[1][1]]
+    test_entries = entries[ranges[2][0]:ranges[2][1]]
+    print(f"train len: {len(train_entries)}, val len: {len(val_entries)}, test len: {len(test_entries)}")
 
     db_name = f"{DATASET_DIR}/mace_{dataset_type}"
-    create_lmdb(config, f"{db_name}_val", val_paths)
-    create_lmdb(config, f"{db_name}_test", test_paths)
-    create_lmdb(config, f"{db_name}_train", train_paths) # train last since it'll be the slowest
+    create_lmdb(config, f"{db_name}_val", val_entries)
+    create_lmdb(config, f"{db_name}_test", test_entries)
+    create_lmdb(config, f"{db_name}_train", train_entries) # train last since it'll be the slowest
 
 
-def create_lmdb(config, dataset_path, data_paths: list[str]):
+def create_lmdb(config, dataset_path, atoms: list[pymatgen.io.ase.MSONAtoms]):
     db = lmdb.open(
         f"{dataset_path}.lmdb",
         map_size=1099511627776 * 2, # two terabytes is the max size of the db
@@ -74,35 +68,41 @@ def create_lmdb(config, dataset_path, data_paths: list[str]):
     idx = 0
 
     start_time = time.time()
-    for system in data_paths:
-        # Extract Data object
-        data_objects = read_trajectory_extract_features(a2g, system)
-        initial_struc = data_objects[0]
-        relaxed_struc = data_objects[1]
 
-        initial_struc.y_init = initial_struc.y # subtract off reference energy, if applicable
-        del initial_struc.y
-        initial_struc.y_relaxed = relaxed_struc.y # subtract off reference energy, if applicable
-        initial_struc.pos_relaxed = relaxed_struc.pos
+    tags = atoms[0].get_tags()
+    data_objects = a2g.convert_all(atoms, disable_tqdm=True)
+
+
+    for fid, data in tqdm(enumerate(data_objects), total=len(data_objects)):
+        #assign sid
+        data.sid = torch.LongTensor([0])
+
+        #assign fid
+        data.fid = torch.LongTensor([fid])
+
+        #assign tags, if available
+        data.tags = torch.LongTensor(tags)
 
         # Filter data if necessary
-        # FAIRChem filters adsorption energies > |10| eV
-
-        initial_struc.sid = idx  # arbitrary unique identifier
+        # OCP filters adsorption energies > |10| eV and forces > |50| eV/A
 
         # no neighbor edge case check
-        if initial_struc.edge_index.shape[1] == 0:
-            print("no neighbors", system)
+        if data.edge_index.shape[1] == 0:
+            print("no neighbors. skipping. fid=", fid)
             continue
 
-        # Write to LMDB
         txn = db.begin(write=True)
-        txn.put(f"{idx}".encode("ascii"), pickle.dumps(initial_struc, protocol=-1))
+        txn.put(f"{fid}".encode("ascii"), pickle.dumps(data, protocol=-1))
         txn.commit()
-        db.sync()
-        idx += 1
 
+    txn = db.begin(write=True)
+    txn.put(f"length".encode("ascii"), pickle.dumps(len(data_objects), protocol=-1))
+    txn.commit()
+
+
+    db.sync()
     db.close()
+
     end_time = time.time()
     print(f"{dataset_path} lmdb created")
     print(f"Time to create lmdb: {end_time - start_time}")
@@ -116,9 +116,13 @@ def read_trajectory_extract_features(a2g, traj_path: str):
     data_objects[1].tags = torch.LongTensor(tags)
     return data_objects
 
-def get_traj_files(directory_path:str):
-    pattern = os.path.join(directory_path, "*.extxyz")
-    return glob.glob(pattern)
+def get_entries():
+    IN_DIR = f"../datasets/alexandria"
+    filename = "alexandria_ps_004"
+    with bz2.open(f"{IN_DIR}/{filename}.json.bz2", "rt", encoding="utf-8") as fh:
+        data = json.load(fh)
+        entries = [AseAtomsAdaptor.get_atoms(ComputedStructureEntry.from_dict(i).structure) for i in data["entries"]]
+    return entries
 
 if __name__ == "__main__":
     main()

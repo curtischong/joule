@@ -32,6 +32,17 @@
             ],
         },
         {
+            "name": "create alexandria db",
+            "type": "python",
+            "request": "launch",
+            "program": "scripts/dataset_prep/create_alexandria_dataset.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "--config-yml=configs/s2ef/all/joule/upgraded_escn.yml",
+            ],
+        },
+        {
             "name": "pytest equiformerv2",
             "type": "python",
             "request": "launch",
