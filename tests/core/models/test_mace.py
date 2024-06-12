@@ -61,11 +61,22 @@ def load_model(request):
     # so we explicitly set the number of layers to 1 (instead of all 8).
     # The other alternative is to have different snapshots for mac vs. linux.
     model.num_layers = 1
-    request.cls.model = model
+    request.cls.model = model # here we are passing model in as a class-level fixture
 
 class TestMace:
+    @pytest.mark.usefixtures("load_data")
+    @pytest.mark.usefixtures("load_model")
     def test_not_mixing_batch_dim(self):
-        pass
+        data = self.data
+        data.pos.requires_grad = True
+        batch = data_list_collater([data, data])
+        out = self.model(batch)
+
+        num_atoms = batch.natoms[0]
+        loss = out["energy"][:num_atoms].sum() # the loss is only dependent on the first item in the batch
+        loss.backward()
+        print(batch.pos.grad)
+
 
     # I think it's fine if we just test with on an untrained model
     @pytest.mark.usefixtures("load_data")
