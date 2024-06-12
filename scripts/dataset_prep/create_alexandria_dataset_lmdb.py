@@ -23,19 +23,19 @@ def main():
 
     os.makedirs(DATASET_DIR, exist_ok=True)
 
-    create_dataset(config, "1")
-    create_dataset(config, "10")
-    create_dataset(config, "1000")
+    entries = get_entries()
+    np.random.shuffle(entries)
+    print(f"found {len(entries)} systems")
+
+    create_dataset(entries, config, "1")
+    create_dataset(entries, config, "10")
+    create_dataset(entries, config, "1000")
     # create_dataset(config, "10000")
     # create_dataset(config, "all") # Too slow rn
 
 
-def create_dataset(config, dataset_type: str):
-    entries = get_entries()
-    np.random.shuffle(entries)
+def create_dataset(entries, config, dataset_type: str):
     n = len(entries)
-
-    print(f"found {n} systems")
     ranges = get_range(n, dataset_type)
 
     train_entries = entries[ranges[0][0]:ranges[0][1]]
