@@ -20,14 +20,19 @@ def get_range(n: int, dataset_type: str):
     if dataset_type == "all":
         return generate_ranges(n, split_frac=[0.7, 0.15, 0.15])
     elif dataset_type == "10000":
+        assert n >= 30000, "The dataset is too small to generate ranges for 10000 datapoints"
         return [[0, 10000], [10000, 20000], [20000, 30000]]
     elif dataset_type == "1000":
+        assert n >= 3000, "The dataset is too small to generate ranges for 1000 datapoints"
         return [[0, 1000], [1000, 2000], [2000, 3000]]
     elif dataset_type == "100":
+        assert n >= 300, "The dataset is too small to generate ranges for 100 datapoints"
         return [[0, 100], [100, 200], [200, 300]]
     elif dataset_type == "10":
+        assert n >= 30, "The dataset is too small to generate ranges for 10 datapoints"
         return [[0, 10], [10, 20], [20, 30]]
     elif dataset_type == "1":
+        assert n >= 3, "The dataset is too small to generate ranges for 1 datapoint"
         return [[0, 1], [1, 2], [2, 3]]
     else:
         raise ValueError(f"Unknown dataset type: {dataset_type}")

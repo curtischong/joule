@@ -17,6 +17,8 @@ from ase.calculators.singlepoint import SinglePointCalculator
 from dataset_prep_common import get_range, parse_config
 
 DATASET_DIR = "datasets/lmdb"
+# MAX_ATOMIC_NUMBER = 36
+MAX_ATOMIC_NUMBER = 54
 
 def main():
     config = parse_config()
@@ -25,13 +27,12 @@ def main():
 
     entries = get_entries()
     np.random.shuffle(entries)
-    print(f"found {len(entries)} systems")
 
     create_dataset(entries, config, "1")
     create_dataset(entries, config, "10")
     create_dataset(entries, config, "1000")
     # create_dataset(config, "10000")
-    # create_dataset(config, "all") # Too slow rn
+    create_dataset(entries, config, "all") # Too slow rn
 
 
 def create_dataset(entries, config, dataset_type: str):
@@ -116,6 +117,8 @@ def get_entries():
         entries = []
         for i in data["entries"]:
             computed_entry = ComputedStructureEntry.from_dict(i)
+            if not all([element.number <= MAX_ATOMIC_NUMBER for element in computed_entry.elements]):
+                continue
             structure = computed_entry.structure
             atoms = AseAtomsAdaptor.get_atoms(structure)
             # forces = computed_entry.data.get('forces', None)  # Replace with actual forces if available
@@ -129,6 +132,9 @@ def get_entries():
             calc = SinglePointCalculator(atoms, energy=computed_entry.energy, forces=forces)
             atoms.set_calculator(calc)
             entries.append(atoms)
+
+    print(f"found {len(data['entries'])} systems")
+    print(f"after filtering, found {len(entries)} systems")
     return entries
 
 if __name__ == "__main__":
