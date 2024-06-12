@@ -68,21 +68,21 @@ class TestMace:
     @pytest.mark.usefixtures("load_model")
     def test_not_mixing_batch_dim(self):
         data = self.data.detach().clone()
-        data2 = self.data.detach().clone() # clone so when we send the gradients back, it doesn't mix across the batch
-        data.pos.requires_grad_(True)
-        data2.pos.requires_grad_(True)
+        data2 = self.data.detach().clone() # clone so it's explicit that these are two diff tensors
         batch = data_list_collater([data, data2])
 
         # assert the model's weights init as 0 grad
         assert data.pos.grad == None, "data initialized with grad"
         assert data2.pos.grad == None, "data2 initialized with grad"
+        batch.pos.requires_grad_(True)
         out = self.model(batch)
 
-        num_atoms = batch.natoms[0]
-        loss = out["energy"][:num_atoms].sum() # the loss is only dependent on the first item in the batch
+        loss = out["energy"][0] # the loss is only dependent on the first item in the batch
         loss.backward()
-        # print(self.model.sphere_embedding.weight.grad)
-        assert torch.all(self.model.sphere_embedding.weight.grad.eq(0)), "Not all values are zero"
+
+        num_atoms = batch.natoms[0]
+        assert torch.all(batch.pos.grad[:num_atoms].ne(0)), "Expected all of the gradients to NOT be zero (in the first batch)" # note: there is a rare scenario where the grad IS 0. but it's so rare. do not care
+        assert torch.all(batch.pos.grad[num_atoms:].eq(0)), "Expected all of the gradients to be zero (in the second batch)"
 
 
     # I think it's fine if we just test with on an untrained model

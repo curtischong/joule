@@ -49,7 +49,7 @@
             "module": "pytest",
             "args": [
                 "tests/core/models/test_mace.py",
-                "-k=test_not_mixing_batch_dim"
+                // "-k=test_not_mixing_batch_dim"
             ],
             "console": "integratedTerminal",
             "justMyCode": true
