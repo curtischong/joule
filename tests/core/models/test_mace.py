@@ -67,15 +67,22 @@ class TestMace:
     @pytest.mark.usefixtures("load_data")
     @pytest.mark.usefixtures("load_model")
     def test_not_mixing_batch_dim(self):
-        data = self.data
-        data.pos.requires_grad = True
-        batch = data_list_collater([data, data])
+        data = self.data.detach().clone()
+        data2 = self.data.detach().clone() # clone so when we send the gradients back, it doesn't mix across the batch
+        data.pos.requires_grad_(True)
+        data2.pos.requires_grad_(True)
+        batch = data_list_collater([data, data2])
+
+        # assert the model's weights init as 0 grad
+        assert data.pos.grad == None, "data initialized with grad"
+        assert data2.pos.grad == None, "data2 initialized with grad"
         out = self.model(batch)
 
         num_atoms = batch.natoms[0]
         loss = out["energy"][:num_atoms].sum() # the loss is only dependent on the first item in the batch
         loss.backward()
-        print(batch.pos.grad)
+        # print(self.model.sphere_embedding.weight.grad)
+        assert torch.all(self.model.sphere_embedding.weight.grad.eq(0)), "Not all values are zero"
 
 
     # I think it's fine if we just test with on an untrained model
