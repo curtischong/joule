@@ -36,7 +36,7 @@ with contextlib.suppress(ImportError):
 
 
 @registry.register_model("mace")
-class mace(BaseModel):
+class Mace(BaseModel):
     """Equivariant Spherical Channel Network
     Paper: Reducing SO(3) Convolutions to SO(2) for Efficient Equivariant GNNs
 
@@ -62,13 +62,66 @@ class mace(BaseModel):
         show_timing_info (bool):      Show timing and memory info
     """
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        # num_atoms: int,  # not used
+        # bond_feat_dim: int,  # not used
+        # num_targets: int,  # not used
+        use_pbc: bool = True,
+        regress_forces: bool = True,
+        otf_graph: bool = False,
+        max_neighbors: int = 40,
+        cutoff: float = 8.0,
+        max_num_elements: int = 90,
+        num_layers: int = 8,
+        lmax_list: list[int] | None = None,
+        mmax_list: list[int] | None = None,
+        sphere_channels: int = 128,
+        hidden_channels: int = 256,
+        edge_channels: int = 128,
+        use_grid: bool = True,
+        num_sphere_samples: int = 128,
+        distance_function: str = "gaussian",
+        basis_width_scalar: float = 1.0,
+        distance_resolution: float = 0.02,
+        show_timing_info: bool = False,
+    ) -> None:
+        if mmax_list is None:
+            mmax_list = [2]
+        if lmax_list is None:
+            lmax_list = [6]
         super().__init__()
 
         import sys
+
         if "e3nn" not in sys.modules:
             logging.error("You need to install the e3nn library to use the SCN model")
             raise ImportError
+
+        self.regress_forces = regress_forces
+        self.use_pbc = use_pbc
+        self.cutoff = cutoff
+        self.otf_graph = otf_graph
+        self.show_timing_info = show_timing_info
+        self.max_num_elements = max_num_elements
+        self.hidden_channels = hidden_channels
+        self.num_layers = num_layers
+        self.num_atoms = 0
+        self.num_sphere_samples = num_sphere_samples
+        self.sphere_channels = sphere_channels
+        self.max_neighbors = max_neighbors
+        self.edge_channels = edge_channels
+        self.distance_resolution = distance_resolution
+        self.grad_forces = False
+        self.lmax_list = lmax_list
+        self.mmax_list = mmax_list
+        self.num_resolutions: int = len(self.lmax_list)
+        self.sphere_channels_all: int = self.num_resolutions * self.sphere_channels
+        self.basis_width_scalar = basis_width_scalar
+        self.distance_function = distance_function
+
+        # variables used for display purposes
+        self.counter = 0
 
         # non-linear activation function used throughout the network
         self.act = nn.SiLU()
@@ -77,6 +130,43 @@ class mace(BaseModel):
         self.sphere_embedding = nn.Embedding(
             self.max_num_elements, self.sphere_channels_all
         )
+
+        # Initialize the function used to measure the distances between atoms
+        assert self.distance_function in [
+            "gaussian",
+            "sigmoid",
+            "linearsigmoid",
+            "silu",
+        ]
+        self.num_gaussians = int(cutoff / self.distance_resolution)
+        if self.distance_function == "gaussian":
+            self.distance_expansion = GaussianSmearing(
+                0.0,
+                cutoff,
+                self.num_gaussians,
+                basis_width_scalar,
+            )
+        if self.distance_function == "sigmoid":
+            self.distance_expansion = SigmoidSmearing(
+                0.0,
+                cutoff,
+                self.num_gaussians,
+                basis_width_scalar,
+            )
+        if self.distance_function == "linearsigmoid":
+            self.distance_expansion = LinearSigmoidSmearing(
+                0.0,
+                cutoff,
+                self.num_gaussians,
+                basis_width_scalar,
+            )
+        if self.distance_function == "silu":
+            self.distance_expansion = SiLUSmearing(
+                0.0,
+                cutoff,
+                self.num_gaussians,
+                basis_width_scalar,
+            )
 
         # Initialize the transformations between spherical and grid representations
         self.SO3_grid = nn.ModuleList()

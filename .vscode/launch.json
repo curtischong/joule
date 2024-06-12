@@ -43,12 +43,12 @@
             ],
         },
         {
-            "name": "pytest equiformerv2",
+            "name": "pytest mace",
             "type": "python",
             "request": "launch",
             "module": "pytest",
             "args": [
-                "tests/core/models/test_equiformer_v2.py"
+                "tests/core/models/test_mace.py"
             ],
             "console": "integratedTerminal",
             "justMyCode": true
