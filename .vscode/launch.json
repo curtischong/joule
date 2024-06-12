@@ -35,7 +35,7 @@
             "name": "create alexandria db",
             "type": "python",
             "request": "launch",
-            "program": "scripts/dataset_prep/create_alexandria_dataset.py",
+            "program": "scripts/dataset_prep/create_alexandria_dataset_lmdb.py",
             "console": "integratedTerminal",
             "justMyCode": true,
             "args": [
