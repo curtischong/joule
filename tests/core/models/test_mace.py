@@ -36,41 +36,25 @@ def load_model(request):
     torch.manual_seed(4)
     setup_imports()
 
-    model = registry.get_model_class("equiformer_v2")(
-        None,
-        -1,
-        1,
+    model = registry.get_model_class("mace")(
         use_pbc=True,
         regress_forces=True,
         otf_graph=True,
         max_neighbors=20,
-        max_radius=12.0,
+        # max_radius=12.0,
         max_num_elements=90,
+
         num_layers=8,
-        sphere_channels=128,
-        attn_hidden_channels=64,
-        num_heads=8,
-        attn_alpha_channels=64,
-        attn_value_channels=16,
-        ffn_hidden_channels=128,
-        norm_type="layer_norm_sh",
         lmax_list=[4],
         mmax_list=[2],
-        grid_resolution=18,
+        sphere_channels=128,
+        hidden_channels=128,
         num_sphere_samples=128,
         edge_channels=128,
-        use_atom_edge_embedding=True,
         distance_function="gaussian",
-        num_distance_basis=512,
-        attn_activation="silu",
-        use_s2_act_attn=False,
-        ffn_activation="silu",
-        use_gate_act=False,
-        use_grid_mlp=True,
-        alpha_drop=0.1,
-        drop_path_rate=0.1,
-        proj_drop=0.0,
-        weight_init="uniform",
+        basis_width_scalar=2.0,
+        distance_resolution=0.02,
+        show_timing_info=True,
     )
 
     # Precision errors between mac vs. linux compound with multiple layers,
@@ -102,12 +86,12 @@ class TestMace:
 
         # Compare predicted energies and forces (after inv-rotation).
         energies = out["energy"].detach().numpy() # convert to numpy, so more deciomals points are printed during a mismatch
-        np.testing.assert_almost_equal(energies[0], energies[1], decimal=4)
+        np.testing.assert_almost_equal(energies[0], energies[1], decimal=5)
 
         forces = out["forces"].detach()
         logging.info(forces)
         np.testing.assert_array_almost_equal(
             forces[: forces.shape[0] // 2].numpy(),
             torch.matmul(forces[forces.shape[0] // 2 :], inv_rot).numpy(),
-            decimal=3,
+            decimal=5,
         )
