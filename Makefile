@@ -5,4 +5,6 @@ train10:
 train1000:
 	python main.py --mode=train --config-yml=configs/s2ef/all/joule/upgraded_escn.yml --dataset.train.src=datasets/lmdb/alexandria_1000_train.lmdb --dataset.val.src=datasets/lmdb/alexandria_1000_val.lmdb --amp
 create_mace_dataset_lmdb:
-	python scripts/create_mace_dataset_lmdb.py --config-yml=configs/s2ef/all/joule/upgraded_escn.yml
+	python scripts/dataset_prep/create_mace_dataset_lmdb.py --config-yml=configs/s2ef/all/joule/upgraded_escn.yml
+create_alexandria_dataset_lmdb:
+	python scripts/dataset_prep/create_alexandria_dataset_lmdb.py --config-yml=configs/s2ef/all/joule/upgraded_escn.yml

@@ -125,13 +125,8 @@ def get_entries():
                     forces.append(site.properties["forces"])
                 else:
                     forces.append([None, None, None])  # If forces are not present for a site
-            # print(forces)
-            # forces = np.array(atoms.get_forces())
-            uncorrected_energy = computed_entry.energy
-            correction = computed_entry.correction
-            corrected_energy = uncorrected_energy + correction
-
-            calc = SinglePointCalculator(atoms, energy=corrected_energy, forces=forces)
+            # I verified that the energy IS the energy that includes the correction (see curtis_read_alexandria.ipynb)
+            calc = SinglePointCalculator(atoms, energy=computed_entry.energy, forces=forces)
             atoms.set_calculator(calc)
             entries.append(atoms)
     return entries
