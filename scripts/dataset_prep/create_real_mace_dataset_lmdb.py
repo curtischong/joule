@@ -1,3 +1,4 @@
+from ase import Atoms
 from fairchem.core.preprocessing import AtomsToGraphs
 import ase.io
 import lmdb
@@ -27,13 +28,13 @@ def main():
 
     os.makedirs(DATASET_DIR, exist_ok=True)
 
-    entries = get_entries()
+    entries = get_entries(3)
     np.random.shuffle(entries)
 
     create_dataset(entries, config, "1")
     create_dataset(entries, config, "10")
     create_dataset(entries, config, "1000")
-    create_dataset(entries, config, "10000")
+    # create_dataset(entries, config, "10000")
     create_dataset(entries, config, "all") # Too slow rn
 
 def read_data(file_path, num_configs=25):
@@ -135,32 +136,33 @@ def create_lmdb(config, dataset_path, atoms: list[pymatgen.io.ase.MSONAtoms]):
     print(f"{dataset_path} lmdb created")
     print(f"Time to create lmdb: {end_time - start_time}")
 
-def get_entries():
-    IN_DIR = "./datasets/alexandria"
+def get_entries(file_idx):
+    IN_DIR = "./datasets/mace"
     entries = []
-    for i in range(5):
-        filename = f"alexandria_ps_00{i}"
-        with bz2.open(f"{IN_DIR}/{filename}.json.bz2", "rt", encoding="utf-8") as fh:
-            data = json.load(fh)
-            for i in tqdm(data["entries"]):
-                computed_entry = ComputedStructureEntry.from_dict(i)
-                if not all([element.number <= MAX_ATOMIC_NUMBER for element in computed_entry.elements]):
-                    continue
-                structure = computed_entry.structure
-                atoms = AseAtomsAdaptor.get_atoms(structure)
-                # forces = computed_entry.data.get('forces', None)  # Replace with actual forces if available
-                forces = []
-                for site in structure:
-                    if "forces" in site.properties:
-                        forces.append(site.properties["forces"])
-                    else:
-                        forces.append([None, None, None])  # If forces are not present for a site
-                # I verified that the energy IS the energy that includes the correction (see curtis_read_alexandria.ipynb)
-                calc = SinglePointCalculator(atoms, energy=computed_entry.energy, forces=forces)
-                atoms.set_calculator(calc)
-                entries.append(atoms)
 
-    print(f"found {len(data['entries'])} systems")
+    with h5py.File(f"{IN_DIR}/train_{file_idx}.h5", 'r') as hdf5_file:
+        num_configs = len(hdf5_file["config_batch_0"])
+        for i in tqdm(range(num_configs)):
+            config_group = hdf5_file[f'config_batch_0/config_{i}']
+            atomic_numbers = config_group['atomic_numbers'][:]
+            if not all([element <= MAX_ATOMIC_NUMBER for element in atomic_numbers]):
+                continue
+
+            cell = config_group['cell'][:]
+            # properties["charges"].append(config_group['charges'][:])
+            energy = config_group['energy'][()] # curtis: why is energy ()??
+            forces = config_group['forces'][:]
+            positions = config_group['positions'][:]
+
+            # I checked. positions=positions are setting the cartesian coordinates.
+            atoms = Atoms(numbers=atomic_numbers, positions=positions, cell=cell, pbc=[True, True, True])
+
+            # I verified that the energy IS the energy that includes the correction (see curtis_read_alexandria.ipynb)
+            calc = SinglePointCalculator(atoms, energy=energy, forces=forces)
+            atoms.set_calculator(calc)
+            entries.append(atoms)
+
+    print(f"found {num_configs} systems")
     print(f"after filtering, found {len(entries)} systems")
     return entries
 
