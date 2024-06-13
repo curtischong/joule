@@ -8,7 +8,7 @@ sudo apt install python3.11
 sudo apt install python3.11-venv
 python3.11 -m venv venv
 
-pip install torch submitit numpy torch-geometric PyYAML matplotlib==3.8.3 numba lmdb h5py pymatgen timm ase e3nn wandb tensorboard kaleido jupyterlab crystal-toolkit pytest syrupy
+pip install torch submitit numpy torch-geometric PyYAML matplotlib==3.8.3 numba lmdb h5py pymatgen timm ase e3nn wandb tensorboard kaleido jupyterlab crystal-toolkit pytest syrupy tables polars seaborn
 
 # to install this package so we have access to them in jupyter notebooks
 pip install -e .
