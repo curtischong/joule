@@ -18,7 +18,7 @@ import h5py
 
 from dataset_prep_common import get_range, parse_config
 
-DATASET_DIR = "datasets/lmdb"
+DATASET_DIR = "datasets/lmdb/real_mace"
 # MAX_ATOMIC_NUMBER = 36
 MAX_ATOMIC_NUMBER = 54
 
@@ -72,7 +72,7 @@ def create_dataset(entries, config, dataset_type: str):
     test_entries = entries[ranges[2][0]:ranges[2][1]]
     print(f"train len: {len(train_entries)}, val len: {len(val_entries)}, test len: {len(test_entries)}")
 
-    db_name = f"{DATASET_DIR}/alexandria_{dataset_type}"
+    db_name = f"{DATASET_DIR}/{dataset_type}"
     create_lmdb(config, f"{db_name}_val", val_entries)
     create_lmdb(config, f"{db_name}_test", test_entries)
     create_lmdb(config, f"{db_name}_train", train_entries) # train last since it'll be the slowest
@@ -137,7 +137,7 @@ def create_lmdb(config, dataset_path, atoms: list[pymatgen.io.ase.MSONAtoms]):
     print(f"Time to create lmdb: {end_time - start_time}")
 
 def get_entries(file_idx):
-    IN_DIR = "./datasets/mace"
+    IN_DIR = "./datasets/real_mace"
     entries = []
 
     with h5py.File(f"{IN_DIR}/train_{file_idx}.h5", 'r') as hdf5_file:
