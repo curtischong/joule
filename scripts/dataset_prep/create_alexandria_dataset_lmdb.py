@@ -31,7 +31,7 @@ def main():
     create_dataset(entries, config, "1")
     create_dataset(entries, config, "10")
     create_dataset(entries, config, "1000")
-    create_dataset(config, "10000")
+    create_dataset(entries, config, "10000")
     create_dataset(entries, config, "all") # Too slow rn
 
 
@@ -67,7 +67,6 @@ def create_lmdb(config, dataset_path, atoms: list[pymatgen.io.ase.MSONAtoms]):
         r_distances=False,
         r_fixed=True,
     )
-    idx = 0
 
     start_time = time.time()
 
