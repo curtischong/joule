@@ -53,6 +53,17 @@
             ],
             "console": "integratedTerminal",
             "justMyCode": true
-        }
+        },
+        {
+            "name": "create mace db",
+            "type": "python",
+            "request": "launch",
+            "program": "scripts/dataset_prep/create_real_mace_dataset_lmdb.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "--config-yml=configs/s2ef/all/joule/upgraded_escn.yml",
+            ],
+        },
     ]
 }

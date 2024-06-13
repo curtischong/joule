@@ -8,3 +8,5 @@ create_mace_dataset_lmdb:
 	python scripts/dataset_prep/create_mace_dataset_lmdb.py --config-yml=configs/s2ef/all/joule/upgraded_escn.yml
 create_alexandria_dataset_lmdb:
 	python scripts/dataset_prep/create_alexandria_dataset_lmdb.py --config-yml=configs/s2ef/all/joule/upgraded_escn.yml
+create_real_mace_dataset_lmdb:
+	python scripts/dataset_prep/create_real_mace_dataset_lmdb.py --config-yml=configs/s2ef/all/joule/upgraded_escn.yml
