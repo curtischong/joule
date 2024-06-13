@@ -31,7 +31,7 @@ def main():
     create_dataset(entries, config, "1")
     create_dataset(entries, config, "10")
     create_dataset(entries, config, "1000")
-    # create_dataset(config, "10000")
+    create_dataset(entries, config, "10000")
     create_dataset(entries, config, "all") # Too slow rn
 
 
@@ -67,7 +67,6 @@ def create_lmdb(config, dataset_path, atoms: list[pymatgen.io.ase.MSONAtoms]):
         r_distances=False,
         r_fixed=True,
     )
-    idx = 0
 
     start_time = time.time()
 
@@ -110,28 +109,29 @@ def create_lmdb(config, dataset_path, atoms: list[pymatgen.io.ase.MSONAtoms]):
     print(f"Time to create lmdb: {end_time - start_time}")
 
 def get_entries():
-    IN_DIR = f"/home/ubuntu/joule/datasets/alexandria"
-    filename = "alexandria_ps_004"
-    with bz2.open(f"{IN_DIR}/{filename}.json.bz2", "rt", encoding="utf-8") as fh:
-        data = json.load(fh)
-        entries = []
-        for i in data["entries"]:
-            computed_entry = ComputedStructureEntry.from_dict(i)
-            if not all([element.number <= MAX_ATOMIC_NUMBER for element in computed_entry.elements]):
-                continue
-            structure = computed_entry.structure
-            atoms = AseAtomsAdaptor.get_atoms(structure)
-            # forces = computed_entry.data.get('forces', None)  # Replace with actual forces if available
-            forces = []
-            for site in structure:
-                if "forces" in site.properties:
-                    forces.append(site.properties["forces"])
-                else:
-                    forces.append([None, None, None])  # If forces are not present for a site
-            # I verified that the energy IS the energy that includes the correction (see curtis_read_alexandria.ipynb)
-            calc = SinglePointCalculator(atoms, energy=computed_entry.energy, forces=forces)
-            atoms.set_calculator(calc)
-            entries.append(atoms)
+    IN_DIR = "./datasets/alexandria"
+    entries = []
+    for i in range(5):
+        filename = f"alexandria_ps_00{i}"
+        with bz2.open(f"{IN_DIR}/{filename}.json.bz2", "rt", encoding="utf-8") as fh:
+            data = json.load(fh)
+            for i in tqdm(data["entries"]):
+                computed_entry = ComputedStructureEntry.from_dict(i)
+                if not all([element.number <= MAX_ATOMIC_NUMBER for element in computed_entry.elements]):
+                    continue
+                structure = computed_entry.structure
+                atoms = AseAtomsAdaptor.get_atoms(structure)
+                # forces = computed_entry.data.get('forces', None)  # Replace with actual forces if available
+                forces = []
+                for site in structure:
+                    if "forces" in site.properties:
+                        forces.append(site.properties["forces"])
+                    else:
+                        forces.append([None, None, None])  # If forces are not present for a site
+                # I verified that the energy IS the energy that includes the correction (see curtis_read_alexandria.ipynb)
+                calc = SinglePointCalculator(atoms, energy=computed_entry.energy, forces=forces)
+                atoms.set_calculator(calc)
+                entries.append(atoms)
 
     print(f"found {len(data['entries'])} systems")
     print(f"after filtering, found {len(entries)} systems")
