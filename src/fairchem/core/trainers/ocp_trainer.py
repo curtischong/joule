@@ -24,8 +24,7 @@ from fairchem.core.common.utils import cg_change_mat, check_traj_files, irreps_s
 from fairchem.core.modules.evaluator import Evaluator
 from fairchem.core.modules.scaling.util import ensure_fitted
 from fairchem.core.trainers.base_trainer import BaseTrainer
-from fairchem.core.scripts.download_top_moe import process_loss_values, heap_is_not_empty, download_heap, clear_heap
-
+from fairchem.core.scripts.download_worse_mae import process_loss_values, heap_is_not_empty, download_heap, clear_heap
 
 @registry.register_trainer("ocp")
 @registry.register_trainer("energy")
