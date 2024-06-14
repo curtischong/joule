@@ -27,11 +27,6 @@ OUT_VAL_DIR = "datasets/lmdb/real_mace/val"
 # MAX_ATOMIC_NUMBER = 36
 MIN_ATOMIC_NUMBER = 36
 MAX_ATOMIC_NUMBER = 54
-# curtis_most_important = [
-#     6, # carbon
-#     7, # nitrogen
-#     8, # oxygen
-# ]
 
 most_common_elements = set([8, 1, 9, 16, 15, 7, 3, 12, 6, 14, 17, 26, 34, 5, 25, 13, 11, 23, 19, 27])
 MAX_JOBS = 8
