@@ -39,9 +39,9 @@ model:
   otf_graph: True
 
 optim:
-  batch_size: 6
-  eval_batch_size: 6
-  num_workers: 8
+  batch_size: 12
+  eval_batch_size: 12
+  num_workers: 12
   lr_initial: 0.0008
   optimizer: AdamW
   optimizer_params: {"amsgrad": True}
