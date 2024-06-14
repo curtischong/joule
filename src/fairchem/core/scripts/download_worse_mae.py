@@ -7,19 +7,21 @@ energy_heap = []
 force_heap = []
 
 def process_loss_values(loss_values, batch_path, data_idx):
-    if len(loss_values) == 1: #When `def _compute_loss` is called, it first passes `[energy_loss]`, then later `[energy_loss, force_loss]`. We only want to extract the array when its length is 2.
-        return
+    batch_energies, batch_forces = loss_values
 
-    energy, force = loss_values[0], loss_values[1]
-    formatted_batch_path = str(batch_path)
-    formatted_data_idx = data_idx.item()
-    heapq.heappush(energy_heap, (energy, formatted_batch_path, formatted_data_idx))
-    heapq.heappush(force_heap, (force, formatted_batch_path, formatted_data_idx))
+    for i, (energy, force_subarray) in enumerate(zip(batch_energies, batch_forces)):
+        force = sum(force_subarray) / len(force_subarray)
+        formatted_batch_path = str(batch_path[i])
+        formatted_data_idx = data_idx[i].item()
 
-    if len(energy_heap) > heap_size_limit:
-        heapq.heappop(energy_heap)
-    if len(force_heap) > heap_size_limit:
-        heapq.heappop(force_heap)
+        heapq.heappush(energy_heap, (energy, formatted_batch_path, formatted_data_idx))
+        heapq.heappush(force_heap, (force, formatted_batch_path, formatted_data_idx))
+
+        if len(energy_heap) > heap_size_limit:
+            heapq.heappop(energy_heap)
+        if len(force_heap) > heap_size_limit:
+            heapq.heappop(force_heap)
+            print('gogogahgah')
 
 def heap_is_not_empty():
     return bool(energy_heap) or bool(force_heap)
