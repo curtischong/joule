@@ -2,7 +2,7 @@ trainer: ocp
 
 dataset:
   train:
-    # curtis: I commend out src so we have to explicitly set it when running the makefile
+    # curtis: I commented out src so we have to explicitly set it when running the makefile
     # format: lmdb
     # src: data/s2ef/all/train/
     key_mapping:
