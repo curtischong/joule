@@ -40,6 +40,7 @@ model:
   use_pbc: True
   basis_width_scalar: 2.0
   otf_graph: True
+  max_num_elements: 90
 
 optim:
   batch_size: 12
