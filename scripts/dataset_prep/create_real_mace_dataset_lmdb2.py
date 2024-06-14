@@ -18,7 +18,10 @@ import h5py
 
 from dataset_prep_common import get_range, parse_config
 
-DATASET_DIR = "datasets/lmdb/real_mace"
+IN_TRAIN_DIR = "datasets/real_mace/train"
+IN_VAL_DIR = "datasets/real_mace/val"
+TRAIN_DIR = "datasets/lmdb/real_mace/train"
+VAL_DIR = "datasets/lmdb/real_mace/val"
 # MAX_ATOMIC_NUMBER = 36
 MAX_ATOMIC_NUMBER = 54
 
@@ -26,14 +29,20 @@ MAX_ATOMIC_NUMBER = 54
 def main():
     config = parse_config()
 
-    os.makedirs(DATASET_DIR, exist_ok=True)
+    os.makedirs(TRAIN_DIR, exist_ok=True)
+    os.makedirs(VAL_DIR, exist_ok=True)
 
-    num_train_files = 50
+    num_train_files = 64
     for i in range(num_train_files):
-        entries = get_entries(i)
-        # np.random.shuffle(entries)
-        # create_dataset(entries[:10], config, "10")
-        create_dataset(entries, config, "all") # Too slow rn
+        entries = get_entries(IN_TRAIN_DIR, f"train_{i}")
+        db_name = f"{TRAIN_DIR}/{i}"
+        create_lmdb(config, db_name, entries) # train last since it'll be the slowest
+
+    num_val_files = 64
+    for i in range(num_val_files):
+        entries = get_entries(IN_VAL_DIR, f"val_{i}")
+        db_name = f"{VAL_DIR}/{i}"
+        create_lmdb(config, db_name, entries) # train last since it'll be the slowest
 
 def read_data(file_path, num_configs=25):
     properties = {
@@ -60,10 +69,6 @@ def read_data(file_path, num_configs=25):
             properties["virials"].append(config_group['virials'][:])
 
     return properties
-
-def create_dataset(entries, config, dataset_type: str):
-    db_name = f"{DATASET_DIR}/{dataset_type}"
-    create_lmdb(config, f"{db_name}_train", entries) # train last since it'll be the slowest
 
 
 def create_lmdb(config, dataset_path, atoms: list[pymatgen.io.ase.MSONAtoms]):
@@ -124,11 +129,10 @@ def create_lmdb(config, dataset_path, atoms: list[pymatgen.io.ase.MSONAtoms]):
     print(f"{dataset_path} lmdb created")
     print(f"Time to create lmdb: {end_time - start_time}")
 
-def get_entries(file_idx):
-    IN_DIR = "./datasets/real_mace"
+def get_entries(IN_DIR, file_name):
     entries = []
 
-    with h5py.File(f"{IN_DIR}/train_{file_idx}.h5", 'r') as hdf5_file:
+    with h5py.File(f"{IN_DIR}/{file_name}.h5", 'r') as hdf5_file:
         num_configs = len(hdf5_file["config_batch_0"])
         for i in tqdm(range(num_configs)):
             config_group = hdf5_file[f'config_batch_0/config_{i}']

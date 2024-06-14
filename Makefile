@@ -8,13 +8,9 @@ train10:
 train1000:
 	python main.py --mode=train --config-yml=$(CONFIG_YML) --dataset.train.src=$(LMDB_DATASET)1000_train.lmdb --dataset.val.src=$(LMDB_DATASET)1000_val.lmdb --amp
 create_mace_dataset_lmdb:
-<<<<<<< Updated upstream
 	python scripts/dataset_prep/create_mace_dataset_lmdb.py --config-yml=$(CONFIG_YML)
-=======
-	python scripts/dataset_prep/create_mace_dataset_lmdb.py --config-yml=configs/s2ef/all/joule/upgraded_escn.yml
 create_real_mace_dataset_lmdb:
-	python scripts/dataset_prep/create_real_mace_dataset_lmdb.py --config-yml=configs/s2ef/all/joule/upgraded_escn.yml
->>>>>>> Stashed changes
+	python scripts/dataset_prep/create_real_mace_dataset_lmdb.py --config-yml=$(CONFIG_YML)
 create_alexandria_dataset_lmdb:
 	python scripts/dataset_prep/create_alexandria_dataset_lmdb.py --config-yml=$(CONFIG_YML)
 create_real_mace_dataset_lmdb:
