@@ -111,5 +111,14 @@
                 "--amp",
             ],
         },
+        {
+            "name": "read predictions",
+            "type": "python",
+            "request": "launch",
+            "program": "scripts/read_predictions.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [],
+        },
     ]
 }
