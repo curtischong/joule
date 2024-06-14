@@ -15,7 +15,16 @@ import wandb
 from torch.utils.tensorboard import SummaryWriter
 
 from fairchem.core.common.registry import registry
+from pathlib import Path
 
+def get_active_branch_name():
+    head_dir = Path(".") / ".git" / "HEAD"
+    with head_dir.open("r") as f:
+        content = f.read().splitlines()
+
+    for line in content:
+        if line[0:4] == "ref:":
+            return line.partition("refs/heads/")[2]
 
 class Logger(ABC):
     """Generic class to interface with various logging modules, e.g. wandb,
@@ -66,6 +75,9 @@ class WandBLogger(Logger):
             if isinstance(self.config["logger"], dict)
             else None
         )
+
+        if not self.config["cmd"]["identifier"]:
+            self.config["cmd"]["identifier"] = get_active_branch_name()
 
         wandb.init(
             config=self.config,

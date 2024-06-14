@@ -27,9 +27,11 @@ model:
   # num_layers: 4
   max_neighbors: 20
   cutoff: 8.0
-  sphere_channels: 128
-  hidden_channels: 256
-  lmax_list: [6]
+  # sphere_channels: 128
+  # hidden_channels: 256
+  sphere_channels: 160
+  hidden_channels: 384
+  lmax_list: [3]
   mmax_list: [2]
   num_sphere_samples: 128
   distance_function: "gaussian"
