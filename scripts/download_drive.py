@@ -4,6 +4,9 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 
+# pip install google-auth google-api-python-client
+
+
 # Path to the service account credentials file
 SERVICE_ACCOUNT_FILE = 'credentials.json'
 
@@ -17,8 +20,8 @@ def main():
     drive_service = build('drive', 'v3', credentials=credentials)
 
     # Get the folder ID from the URL
-    # url = 'https://drive.google.com/drive/folders/12RsjlEtSlBldhoQVJapfC9lIFZwpnVk6' # mace train
-    url = 'https://drive.google.com/drive/folders/10atLHo2VJyTcb9JqL8SjHZIornPntUh-'  # mace val
+    url = 'https://drive.google.com/drive/folders/12RsjlEtSlBldhoQVJapfC9lIFZwpnVk6' # mace train
+    # url = 'https://drive.google.com/drive/folders/10atLHo2VJyTcb9JqL8SjHZIornPntUh-'  # mace val
     folder_id = url.split("/")[-1]
 
     # Create a directory to store the downloaded files

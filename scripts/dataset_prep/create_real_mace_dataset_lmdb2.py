@@ -36,8 +36,8 @@ def main():
     os.makedirs(OUT_VAL_DIR, exist_ok=True)
 
 
-    # parse_datasets(config, IN_TRAIN_DIR, OUT_TRAIN_DIR, "train", num_files=64)
-    parse_datasets(config, IN_VAL_DIR, OUT_VAL_DIR, "val", num_files=64)
+    parse_datasets(config, IN_TRAIN_DIR, OUT_TRAIN_DIR, "train", num_files=64)
+    # parse_datasets(config, IN_VAL_DIR, OUT_VAL_DIR, "val", num_files=64)
 
 
 def parse_datasets(config, in_dir, out_dir, in_dir_prefix, num_files):
@@ -82,6 +82,8 @@ def create_lmdb(config, dataset_path, atoms: list[pymatgen.io.ase.MSONAtoms]):
     tags = atoms[0].get_tags()
     data_objects = a2g.convert_all(atoms, disable_tqdm=True)
 
+    print(f"reading {dataset_path}")
+
 
     for fid, data in tqdm(enumerate(data_objects), total=len(data_objects)):
         #assign sid
@@ -122,6 +124,7 @@ def get_entries(in_dir, file_name):
 
     with h5py.File(f"{in_dir}/{file_name}.h5", 'r') as hdf5_file:
         num_configs = len(hdf5_file["config_batch_0"])
+        # num_configs = 1000
         for i in tqdm(range(num_configs)):
             config_group = hdf5_file[f'config_batch_0/config_{i}']
             atomic_numbers = config_group['atomic_numbers'][:]
