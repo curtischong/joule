@@ -40,7 +40,7 @@ def main():
 
 
     parse_datasets(config, IN_TRAIN_DIR, OUT_TRAIN_DIR, "train", num_files=64)
-    # parse_datasets(config, IN_VAL_DIR, OUT_VAL_DIR, "val", num_files=64)
+    parse_datasets(config, IN_VAL_DIR, OUT_VAL_DIR, "val", num_files=64)
 
 
 def parse_datasets(config, in_dir, out_dir, in_dir_prefix, num_files):
