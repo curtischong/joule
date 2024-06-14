@@ -15,34 +15,44 @@ from pymatgen.entries.computed_entries import ComputedStructureEntry
 from pymatgen.io.ase import AseAtomsAdaptor
 from ase.calculators.singlepoint import SinglePointCalculator
 import h5py
+from multiprocessing import Process
 
 from dataset_prep_common import get_range, parse_config
 
 IN_TRAIN_DIR = "datasets/real_mace/train"
 IN_VAL_DIR = "datasets/real_mace/val"
-TRAIN_DIR = "datasets/lmdb/real_mace/train"
-VAL_DIR = "datasets/lmdb/real_mace/val"
+OUT_TRAIN_DIR = "datasets/lmdb/real_mace/train"
+OUT_VAL_DIR = "datasets/lmdb/real_mace/val"
 # MAX_ATOMIC_NUMBER = 36
 MAX_ATOMIC_NUMBER = 54
+MAX_JOBS = 8
 
 
 def main():
     config = parse_config()
 
-    os.makedirs(TRAIN_DIR, exist_ok=True)
-    os.makedirs(VAL_DIR, exist_ok=True)
+    os.makedirs(OUT_TRAIN_DIR, exist_ok=True)
+    os.makedirs(OUT_VAL_DIR, exist_ok=True)
 
-    num_train_files = 64
-    for i in range(num_train_files):
-        entries = get_entries(IN_TRAIN_DIR, f"train_{i}")
-        db_name = f"{TRAIN_DIR}/{i}"
-        create_lmdb(config, db_name, entries)
 
-    num_val_files = 64
-    for i in range(num_val_files):
-        entries = get_entries(IN_VAL_DIR, f"val_{i}")
-        db_name = f"{VAL_DIR}/{i}"
-        create_lmdb(config, db_name, entries)
+    parse_datasets(config, IN_TRAIN_DIR, OUT_TRAIN_DIR, "train", num_files=64)
+    # parse_datasets(config, IN_VAL_DIR, OUT_VAL_DIR, "val", num_files=64)
+
+def parse_datasets(config, in_dir, out_dir, in_dir_prefix, num_files):
+    i = 0
+    while i < num_files:
+        processes = []
+        for _ in range(MAX_JOBS):
+            entries = get_entries(in_dir, f"{in_dir_prefix}_{i}")
+            db_name = f"{out_dir}/{i}"
+            # https://stackoverflow.com/questions/55529319/how-to-create-multiple-threads-dynamically-in-python
+            p = Process(target=create_lmdb, args=(config, db_name, entries))
+            p.start()
+            processes.append(p)
+            i += 1
+         # Wait all processes to finish.
+        for p in processes:
+            p.join()
 
 def create_lmdb(config, dataset_path, atoms: list[pymatgen.io.ase.MSONAtoms]):
     db = lmdb.open(
