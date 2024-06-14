@@ -13,7 +13,7 @@ def get_entries(element_cnt, in_dir, file_name):
         for i in tqdm(range(num_configs)):
             config_group = hdf5_file[f'config_batch_0/config_{i}']
             atomic_numbers = config_group['atomic_numbers'][:]
-            # NOTE: curtis: we only update leemnt_cnt by 1 if that element is in that sample
+            # NOTE: curtis: we only update element_cnt by 1 if that element is in that sample
             # we are NOT updating by the actual count of atoms. This is probably better because
             # we're only interested in whether an atom type shows up in the sample or not (since it directly determines the size of our training dataset)
             unique_atomic_numbers = list(set(atomic_numbers))
