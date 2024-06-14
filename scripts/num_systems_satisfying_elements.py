@@ -4,7 +4,10 @@ most_common_elements = set([8, 1, 9, 16, 15, 7, 3, 12, 6, 14, 17, 26, 34, 5, 25,
 curtis_most_important =set([5, 6, 7, 8, 11, 12, 13, 14, 15, 20, 22, 24, 26, 27, 29, 30, 35, 47, 50, 82]) # 137944 satisfy this
 most_common_elements_modified = set([8, 1, 9, 16, 15, 7, 3, 12, 6, 14, 17, 26, 34, 5, 25, 13, 11, 30, 19, 29]) # 255899 satisfy this
 
-allowed_elements = most_common_elements_modified
+most_common_elements_only_one_per_sample = [8, 3, 15, 12, 16, 1, 25, 7, 26, 14, 9, 6, 29, 27, 11, 23, 19, 20, 13, 17] # 324433 satisfy this
+
+
+allowed_elements = most_common_elements_only_one_per_sample
 print("num allowed: ", len(allowed_elements))
 
 
