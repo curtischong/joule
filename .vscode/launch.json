@@ -14,6 +14,8 @@
             "args": [
                 "--mode=train",
                 "--config-yml=configs/s2ef/all/joule/upgraded_escn.yml",
+                "--dataset.train.src=datasets/lmdb/alexandria_all_train.lmdb",
+                "--dataset.train.src=datasets/lmdb/alexandria_all_val.lmdb",
                 "--amp",
             ],
             // "env": {
