@@ -27,9 +27,11 @@ model:
   # num_layers: 4
   max_neighbors: 20
   cutoff: 8.0
-  sphere_channels: 128
-  hidden_channels: 256
-  lmax_list: [6]
+  # sphere_channels: 128
+  # hidden_channels: 256
+  sphere_channels: 160
+  hidden_channels: 384
+  lmax_list: [3]
   mmax_list: [2]
   num_sphere_samples: 128
   distance_function: "gaussian"
@@ -39,9 +41,9 @@ model:
   otf_graph: True
 
 optim:
-  batch_size: 6
-  eval_batch_size: 6
-  num_workers: 8
+  batch_size: 12
+  eval_batch_size: 12
+  num_workers: 12
   lr_initial: 0.0008
   optimizer: AdamW
   optimizer_params: {"amsgrad": True}
