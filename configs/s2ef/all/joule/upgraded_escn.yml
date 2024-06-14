@@ -3,23 +3,24 @@
 includes:
   - configs/s2ef/all/base.yml
 
-dataset:
-  train:
-    format: lmdb
-    src: datasets/lmdb/alexandria_1_train.lmdb # Note: if the dataset is so large it won't fit into one lmdb file, point this to a directory containing multiple lmdb files
-    key_mapping:
-      y: energy
-      force: forces
-    # transforms:
-    #   normalizer:
-    #     energy:
-    #       mean: -0.7554450631141663
-    #       stdev: 2.887317180633545
-    #     forces:
-    #       mean: 0
-    #       stdev: 2.887317180633545
-  val:
-    src: datasets/lmdb/alexandria_1_val.lmdb
+# disable dataset so we explicitly set it when running the makefile
+# dataset:
+#   train:
+#     format: lmdb
+#     src: datasets/lmdb/alexandria_1_train.lmdb # Note: if the dataset is so large it won't fit into one lmdb file, point this to a directory containing multiple lmdb files
+#     key_mapping:
+#       y: energy
+#       force: forces
+#     # transforms:
+#     #   normalizer:
+#     #     energy:
+#     #       mean: -0.7554450631141663
+#     #       stdev: 2.887317180633545
+#     #     forces:
+#     #       mean: 0
+#     #       stdev: 2.887317180633545
+#   val:
+#     src: datasets/lmdb/alexandria_1_val.lmdb
 
 model:
   name: upgraded_escn
@@ -61,3 +62,4 @@ optim:
   energy_coefficient: 4
   clip_grad_norm: 20
   ema_decay: 0.999
+  checkpoint_every: 100
