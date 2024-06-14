@@ -25,7 +25,14 @@ IN_VAL_DIR = "datasets/real_mace/val"
 OUT_TRAIN_DIR = "datasets/lmdb/real_mace/train"
 OUT_VAL_DIR = "datasets/lmdb/real_mace/val"
 # MAX_ATOMIC_NUMBER = 36
+MIN_ATOMIC_NUMBER = 36
 MAX_ATOMIC_NUMBER = 54
+curtis_most_important = [
+    6, # carbon
+    7, # nitrogen
+    8, # oxygen
+
+]
 MAX_JOBS = 8
 
 
@@ -128,7 +135,7 @@ def get_entries(in_dir, file_name):
         for i in tqdm(range(num_configs)):
             config_group = hdf5_file[f'config_batch_0/config_{i}']
             atomic_numbers = config_group['atomic_numbers'][:]
-            if not all([element <= MAX_ATOMIC_NUMBER for element in atomic_numbers]):
+            if not all([MIN_ATOMIC_NUMBER <= element <= MAX_ATOMIC_NUMBER for element in atomic_numbers]):
                 continue
 
             cell = config_group['cell'][:]
