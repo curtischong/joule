@@ -35,9 +35,11 @@ loss_functions:
   - energy:
       fn: mae
       coefficient: 1
+      reduction: "none"
   - forces:
       fn: l2mae
       coefficient: 10
+      reduction: "none"
 
 evaluation_metrics:
   metrics:

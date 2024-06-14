@@ -530,7 +530,7 @@ class BaseTrainer(ABC):
                 coefficient = loss[target].get("coefficient", 1)
                 loss_reduction = loss[target].get("reduction", "mean")
 
-                ### if torch module name provided, use that directly
+                ## if torch module name provided, use that directly
                 if hasattr(nn, loss_name):
                     loss_fn = getattr(nn, loss_name)()
                 ### otherwise, retrieve the correct module based off old naming

@@ -58,14 +58,13 @@ class DDPLoss(nn.Module):
         self.loss_fn = loss_fn
         self.loss_name = loss_name
         self.reduction = reduction
-        assert reduction in ["mean", "mean_all", "sum"]
+        assert reduction in ["mean", "mean_all", "sum", "none"]
 
         # for forces, we want to sum over xyz errors and average over batches/atoms (mean)
         # for other metrics, we want to average over all axes (mean_all) or leave as a sum (sum)
         if reduction == "mean_all":
-            self.loss_fn.reduction = "mean"
-        else:
-            self.loss_fn.reduction = "sum"
+            reduction = "mean"
+        self.loss_fn.reduction = reduction
 
     def forward(
         self,
