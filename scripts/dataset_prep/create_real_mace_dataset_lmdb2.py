@@ -25,8 +25,8 @@ IN_VAL_DIR = "datasets/real_mace/val"
 OUT_TRAIN_DIR = "datasets/lmdb/real_mace/train"
 OUT_VAL_DIR = "datasets/lmdb/real_mace/val"
 # MAX_ATOMIC_NUMBER = 36
-MIN_ATOMIC_NUMBER = 36
-MAX_ATOMIC_NUMBER = 54
+# MIN_ATOMIC_NUMBER = 36
+# MAX_ATOMIC_NUMBER = 54
 
 most_common_elements = set([8, 1, 9, 16, 15, 7, 3, 12, 6, 14, 17, 26, 34, 5, 25, 13, 11, 23, 19, 27])
 MAX_JOBS = 8
