@@ -25,7 +25,10 @@ IN_VAL_DIR = "datasets/real_mace/val"
 OUT_TRAIN_DIR = "datasets/lmdb/real_mace/train"
 OUT_VAL_DIR = "datasets/lmdb/real_mace/val"
 # MAX_ATOMIC_NUMBER = 36
-MAX_ATOMIC_NUMBER = 54
+# MIN_ATOMIC_NUMBER = 36
+# MAX_ATOMIC_NUMBER = 54
+
+most_common_elements_only_one_per_sample = [8, 3, 15, 12, 16, 1, 25, 7, 26, 14, 9, 6, 29, 27, 11, 23, 19, 20, 13, 17] 
 MAX_JOBS = 8
 
 
@@ -37,7 +40,7 @@ def main():
 
 
     parse_datasets(config, IN_TRAIN_DIR, OUT_TRAIN_DIR, "train", num_files=64)
-    # parse_datasets(config, IN_VAL_DIR, OUT_VAL_DIR, "val", num_files=64)
+    parse_datasets(config, IN_VAL_DIR, OUT_VAL_DIR, "val", num_files=64)
 
 
 def parse_datasets(config, in_dir, out_dir, in_dir_prefix, num_files):
@@ -128,7 +131,7 @@ def get_entries(in_dir, file_name):
         for i in tqdm(range(num_configs)):
             config_group = hdf5_file[f'config_batch_0/config_{i}']
             atomic_numbers = config_group['atomic_numbers'][:]
-            if not all([element <= MAX_ATOMIC_NUMBER for element in atomic_numbers]):
+            if not all([element in most_common_elements_only_one_per_sample for element in atomic_numbers]):
                 continue
 
             cell = config_group['cell'][:]
