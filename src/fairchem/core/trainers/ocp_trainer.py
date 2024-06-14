@@ -24,6 +24,7 @@ from fairchem.core.common.utils import cg_change_mat, check_traj_files, irreps_s
 from fairchem.core.modules.evaluator import Evaluator
 from fairchem.core.modules.scaling.util import ensure_fitted
 from fairchem.core.trainers.base_trainer import BaseTrainer
+from fairchem.core.scripts.download_top_moe import process_loss_values, heap_is_not_empty, download_heap, clear_heap
 
 
 @registry.register_trainer("ocp")
@@ -287,7 +288,7 @@ class OCPTrainer(BaseTrainer):
 
         return outputs
 
-    def _compute_loss(self, out, batch):
+    def _copute_loss(self, out, batch, epoch):
         batch_size = batch.natoms.numel()
         fixed = batch.fixed
         mask = fixed == 0
@@ -330,6 +331,14 @@ class OCPTrainer(BaseTrainer):
                     batch_size=batch_size,
                 )
             )
+
+            loss_values = [tensor.item() for tensor in loss]
+            if epoch % 10 == 0:
+                process_loss_values(loss_values)
+            else:
+                if heap_is_not_empty():
+                    download_heap()
+                clear_heap()
 
         # Sanity check to make sure the compute graph is correct.
         for lc in loss:

@@ -1295,10 +1295,9 @@ def update_config(base_config):
 
     return config
 
-
 def get_loss_module(loss_name):
     if loss_name in ["l1", "mae"]:
-        loss_fn = nn.L1Loss()
+        loss_fn = nn.L1Loss(reduction='none')
     elif loss_name == "mse":
         loss_fn = nn.MSELoss()
     elif loss_name == "l2mae":
