@@ -160,6 +160,7 @@ class BaseTrainer(ABC):
             self.config["dataset"] = dataset.get("train", None)
             self.config["val_dataset"] = dataset.get("val", None)
             self.config["test_dataset"] = dataset.get("test", None)
+            self.config["transforms"] = dataset.get("transforms", {}) # curtis: yes. I moved transforms OUT of train and into dataset (so during inference, we do NOT need to have a path for it)
         else:
             self.config["dataset"] = dataset
 
@@ -361,7 +362,7 @@ class BaseTrainer(ABC):
 
     def load_task(self):
         # Normalizer for the dataset.
-        normalizer = self.config["dataset"].get("transforms", {}).get("normalizer", {})
+        normalizer = self.config.get("transforms", {}).get("normalizer", {})
         self.normalizers = {}
         if normalizer:
             for target in normalizer:
