@@ -129,3 +129,4 @@ docs/tutorial/advanced/*.db
 
 /datasets/
 *joule.egg-info/
+*credentials.json
