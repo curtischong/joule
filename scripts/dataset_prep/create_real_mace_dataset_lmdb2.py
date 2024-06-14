@@ -16,6 +16,7 @@ from pymatgen.io.ase import AseAtomsAdaptor
 from ase.calculators.singlepoint import SinglePointCalculator
 import h5py
 from multiprocessing import Process
+import concurrent.futures
 
 from dataset_prep_common import get_range, parse_config
 
@@ -35,24 +36,28 @@ def main():
     os.makedirs(OUT_VAL_DIR, exist_ok=True)
 
 
-    parse_datasets(config, IN_TRAIN_DIR, OUT_TRAIN_DIR, "train", num_files=64)
-    # parse_datasets(config, IN_VAL_DIR, OUT_VAL_DIR, "val", num_files=64)
+    # parse_datasets(config, IN_TRAIN_DIR, OUT_TRAIN_DIR, "train", num_files=64)
+    parse_datasets(config, IN_VAL_DIR, OUT_VAL_DIR, "val", num_files=64)
+
 
 def parse_datasets(config, in_dir, out_dir, in_dir_prefix, num_files):
-    i = 0
-    while i < num_files:
-        processes = []
-        for _ in range(MAX_JOBS):
-            entries = get_entries(in_dir, f"{in_dir_prefix}_{i}")
-            db_name = f"{out_dir}/{i}"
-            # https://stackoverflow.com/questions/55529319/how-to-create-multiple-threads-dynamically-in-python
-            p = Process(target=create_lmdb, args=(config, db_name, entries))
-            p.start()
-            processes.append(p)
-            i += 1
-         # Wait all processes to finish.
-        for p in processes:
-            p.join()
+    def process_file(i):
+        entries = get_entries(in_dir, f"{in_dir_prefix}_{i}")
+        db_name = f"{out_dir}/{i}"
+        create_lmdb(config, db_name, entries)
+    
+    with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_JOBS) as executor:
+        futures = []
+        for i in range(num_files):
+            futures.append(executor.submit(process_file, i))
+        
+        # Wait for all futures to complete
+        for future in concurrent.futures.as_completed(futures):
+            try:
+                future.result()  # to raise any exceptions occurred
+            except Exception as e:
+                print(f"An error occurred: {e}")
+
 
 def create_lmdb(config, dataset_path, atoms: list[pymatgen.io.ase.MSONAtoms]):
     db = lmdb.open(
