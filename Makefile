@@ -7,6 +7,8 @@ train10:
 	python main.py --mode=train --config-yml=$(CONFIG_YML) --dataset.train.src=$(LMDB_DATASET)10_train.lmdb --dataset.val.src=$(LMDB_DATASET)10_val.lmdb --amp
 train1000:
 	python main.py --mode=train --config-yml=$(CONFIG_YML) --dataset.train.src=$(LMDB_DATASET)1000_train.lmdb --dataset.val.src=$(LMDB_DATASET)1000_val.lmdb --amp
+trainall:
+	python main.py --mode=train --config-yml=$(CONFIG_YML) --dataset.train.src=$(LMDB_DATASET)train --dataset.val.src=$(LMDB_DATASET)val --amp
 create_mace_dataset_lmdb:
 	python scripts/dataset_prep/create_mace_dataset_lmdb.py --config-yml=$(CONFIG_YML)
 create_real_mace_dataset_lmdb:

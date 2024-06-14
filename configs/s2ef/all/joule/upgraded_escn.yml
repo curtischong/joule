@@ -23,8 +23,8 @@ dataset:
 
 model:
   name: upgraded_escn
-  # num_layers: 12
-  num_layers: 4
+  num_layers: 12
+  # num_layers: 4
   max_neighbors: 20
   cutoff: 8.0
   sphere_channels: 128
