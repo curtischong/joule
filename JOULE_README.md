@@ -25,6 +25,10 @@ https://chatgpt.com/share/63b7fae4-6c48-4231-a028-b01c9585ceec
 
 
 download datasets:
+
+run download_drive.py (be sure to change the path in the script so you're downloading the right dataset)
+
+These datasets were from here:
 mace train:
 https://drive.google.com/drive/folders/12RsjlEtSlBldhoQVJapfC9lIFZwpnVk6
 mace validation:

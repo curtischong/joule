@@ -36,40 +36,13 @@ def main():
     for i in range(num_train_files):
         entries = get_entries(IN_TRAIN_DIR, f"train_{i}")
         db_name = f"{TRAIN_DIR}/{i}"
-        create_lmdb(config, db_name, entries) # train last since it'll be the slowest
+        create_lmdb(config, db_name, entries)
 
     num_val_files = 64
     for i in range(num_val_files):
         entries = get_entries(IN_VAL_DIR, f"val_{i}")
         db_name = f"{VAL_DIR}/{i}"
-        create_lmdb(config, db_name, entries) # train last since it'll be the slowest
-
-def read_data(file_path, num_configs=25):
-    properties = {
-        "atomic_numbers": [],
-        "cell": [],
-        "charges": [],
-        "energy": [],
-        "forces": [],
-        "positions": [],
-        "stress": [],
-        "virials": [],
-    }
-
-    with h5py.File(file_path, 'r') as hdf5_file:
-        for i in range(num_configs):
-            config_group = hdf5_file[f'config_batch_0/config_{i}']
-            properties["atomic_numbers"].append(config_group['atomic_numbers'][:])
-            properties["cell"].append(config_group['cell'][:])
-            properties["charges"].append(config_group['charges'][:])
-            properties["energy"].append(config_group['energy'][()])
-            properties["forces"].append(config_group['forces'][:])
-            properties["positions"].append(config_group['positions'][:])
-            properties["stress"].append(config_group['stress'][:])
-            properties["virials"].append(config_group['virials'][:])
-
-    return properties
-
+        create_lmdb(config, db_name, entries)
 
 def create_lmdb(config, dataset_path, atoms: list[pymatgen.io.ase.MSONAtoms]):
     db = lmdb.open(
@@ -129,10 +102,10 @@ def create_lmdb(config, dataset_path, atoms: list[pymatgen.io.ase.MSONAtoms]):
     print(f"{dataset_path} lmdb created")
     print(f"Time to create lmdb: {end_time - start_time}")
 
-def get_entries(IN_DIR, file_name):
+def get_entries(in_dir, file_name):
     entries = []
 
-    with h5py.File(f"{IN_DIR}/{file_name}.h5", 'r') as hdf5_file:
+    with h5py.File(f"{in_dir}/{file_name}.h5", 'r') as hdf5_file:
         num_configs = len(hdf5_file["config_batch_0"])
         for i in tqdm(range(num_configs)):
             config_group = hdf5_file[f'config_batch_0/config_{i}']
