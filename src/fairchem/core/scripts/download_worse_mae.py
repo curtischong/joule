@@ -21,7 +21,6 @@ def process_loss_values(loss_values, batch_path, data_idx):
             heapq.heappop(energy_heap)
         if len(force_heap) > heap_size_limit:
             heapq.heappop(force_heap)
-            print('gogogahgah')
 
 def heap_is_not_empty():
     return bool(energy_heap) or bool(force_heap)
