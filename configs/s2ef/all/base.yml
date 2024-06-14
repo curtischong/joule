@@ -1,23 +1,23 @@
 trainer: ocp
 
-# commented this out so we have to explicitly set the dataset when running the makefile
-# dataset:
-#   train:
-#     format: lmdb
-#     src: data/s2ef/all/train/
-#     key_mapping:
-#       y: energy
-#       force: forces
-#     transforms:
-#       normalizer:
-#         energy:
-#           mean: -0.7554450631141663
-#           stdev: 2.887317180633545
-#         forces:
-#           mean: 0
-#           stdev: 2.887317180633545
-#   val:
-#     src: data/s2ef/all/val_id/
+dataset:
+  train:
+    # curtis: I commend out src so we have to explicitly set it when running the makefile
+    # format: lmdb
+    # src: data/s2ef/all/train/
+    key_mapping:
+      y: energy
+      force: forces
+    transforms:
+      normalizer:
+        energy:
+          mean: -0.7554450631141663
+          stdev: 2.887317180633545
+        forces:
+          mean: 0
+          stdev: 2.887317180633545
+  # val:
+    # src: data/s2ef/all/val_id/
 
 logger: wandb
 
