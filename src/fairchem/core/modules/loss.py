@@ -12,7 +12,7 @@ class L2MAELoss(nn.Module):
     def __init__(self, reduction: str = "mean") -> None:
         super().__init__()
         self.reduction = reduction
-        assert reduction in ["mean", "sum"]
+        assert reduction in ["mean", "sum", 'none']
 
     def forward(self, input: torch.Tensor, target: torch.Tensor):
         dists = torch.norm(input - target, p=2, dim=-1)
@@ -20,6 +20,8 @@ class L2MAELoss(nn.Module):
             return torch.mean(dists)
         elif self.reduction == "sum":
             return torch.sum(dists)
+        elif self.reduction == "none":
+            return dists
         return None
 
 

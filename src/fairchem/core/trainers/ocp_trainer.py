@@ -150,7 +150,7 @@ class OCPTrainer(BaseTrainer):
                 # Forward, loss, backward.
                 with torch.cuda.amp.autocast(enabled=self.scaler is not None):
                     out = self._forward(batch)
-                    loss = self._compute_loss(out, batch)
+                    loss = self._compute_loss(out, batch, epoch_int, sample_idx=i)
 
                 # Compute metrics.
                 self.metrics = self._compute_metrics(
@@ -287,7 +287,7 @@ class OCPTrainer(BaseTrainer):
 
         return outputs
 
-    def _copute_loss(self, out, batch, epoch):
+    def _compute_loss(self, out, batch, epoch=None, sample_idx=None):
         batch_size = batch.natoms.numel()
         fixed = batch.fixed
         mask = fixed == 0
@@ -333,7 +333,7 @@ class OCPTrainer(BaseTrainer):
 
             loss_values = [tensor.item() for tensor in loss]
             if epoch % 10 == 0:
-                process_loss_values(loss_values)
+                process_loss_values(loss_values, batch.dataset_path[sample_idx], batch.data_idx[sample_idx])
             else:
                 if heap_is_not_empty():
                     download_heap()

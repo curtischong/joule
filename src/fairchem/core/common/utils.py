@@ -1301,7 +1301,7 @@ def get_loss_module(loss_name):
     elif loss_name == "mse":
         loss_fn = nn.MSELoss()
     elif loss_name == "l2mae":
-        loss_fn = L2MAELoss()
+        loss_fn = L2MAELoss(reduction='none')
     elif loss_name == "atomwisel2":
         loss_fn = AtomwiseL2Loss()
     else:

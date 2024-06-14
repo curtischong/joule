@@ -5,13 +5,13 @@ heap_size_limit = 3
 energy_heap = []
 force_heap = []
 
-def process_loss_values(loss_values):
+def process_loss_values(loss_values, batch_path, data_idx):
     if len(loss_values) == 1: #When `def _compute_loss` is called, it first passes `[energy_loss]`, then later `[energy_loss, force_loss]`. We only want to extract the array when its length is 2.
         return
 
     energy, force = loss_values[0], loss_values[1]
-    heapq.heappush(energy_heap, energy)
-    heapq.heappush(force_heap, force)
+    heapq.heappush(energy_heap, (energy, batch_path, data_idx))
+    heapq.heappush(force_heap, (force, batch_path, data_idx))
 
     if len(energy_heap) > heap_size_limit:
         heapq.heappop(energy_heap)
