@@ -781,6 +781,9 @@ class BaseTrainer(ABC):
                             "Please check if all shared parameters are used "
                             "and point to PyTorch parameters."
                         )
+
+        # curtis: useful tool to get the largest gradient:
+        # max(param.grad.abs().max().item() for param in self.model.parameters() if param.grad is not None)
         if self.clip_grad_norm:
             if self.scaler:
                 self.scaler.unscale_(self.optimizer)

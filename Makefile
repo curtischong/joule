@@ -1,14 +1,14 @@
 CONFIG_YML=configs/s2ef/all/joule/upgraded_escn.yml
 LMDB_DATASET=datasets/lmdb/real_mace/
+ALEXANDRIA_DATASET=datasets/lmdb/
 
 train1:
-	python main.py --mode=train --config-yml=$(CONFIG_YML) --dataset.train.src=$(LMDB_DATASET)1_train.lmdb --dataset.val.src=$(LMDB_DATASET)1_val.lmdb --amp
+	python main.py --mode=train --config-yml=$(CONFIG_YML) --dataset.train.src=$(ALEXANDRIA_DATASET)alexandria_1_train.lmdb --dataset.val.src=$(ALEXANDRIA_DATASET)alexandria_1_val.lmdb --amp
 
 train10:
-	python main.py --mode=train --config-yml=$(CONFIG_YML) --dataset.train.src=$(LMDB_DATASET)train/0.lmdb --dataset.val.src=$(LMDB_DATASET)train/0.lmdb -amp
-
+	python main.py --mode=train --config-yml=$(CONFIG_YML) --dataset.train.src=$(ALEXANDRIA_DATASET)alexandria_10_train.lmdb --dataset.val.src=$(ALEXANDRIA_DATASET)alexandria_10_val.lmdb --amp
 train1000:
-	python main.py --mode=train --config-yml=$(CONFIG_YML) --dataset.train.src=$(LMDB_DATASET)1000_train.lmdb --dataset.val.src=$(LMDB_DATASET)1000_val.lmdb --amp
+	python main.py --mode=train --config-yml=$(CONFIG_YML) --dataset.train.src=$(ALEXANDRIA_DATASET)alexandria_1000_train.lmdb --dataset.val.src=$(ALEXANDRIA_DATASET)alexandria_1000_val.lmdb --amp
 
 # 34 is the largest atomic number of the set of 20 most common elements
 trainall:
