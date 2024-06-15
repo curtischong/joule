@@ -54,27 +54,6 @@ def parse_datasets(in_dir, in_dir_prefix, num_files):
     return results
 
 
-# def parse_datasets(in_dir, in_dir_prefix, num_files):
-#     def process_file(i):
-#         return get_entries(in_dir, f"{in_dir_prefix}_{i}")
-    
-#     with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_JOBS) as executor:
-#         futures = []
-#         for i in range(num_files):
-#             futures.append(executor.submit(process_file, i))
-        
-#         results = []
-#         # Wait for all futures to complete and collect their results
-#         for future in concurrent.futures.as_completed(futures):
-#             try:
-#                 result = future.result()  # to raise any exceptions occurred
-#                 if result is not None:
-#                     results.extend(result)
-#             except Exception as e:
-#                 print(f"An error occurred: {e}")
-    
-#     return results
-
 # this should be a list of pymatgen.io.ase.MSONAtoms
 def create_lmdb(dataset_path, atoms: list[any]):
     db = lmdb.open(

@@ -31,8 +31,8 @@ def main():
     os.makedirs(OUT_VAL_DIR, exist_ok=True)
 
 
-    results = parse_datasets(IN_VAL_DIR, OUT_VAL_DIR, "val", num_files=64)
-    results.extend(parse_datasets(IN_TRAIN_DIR, OUT_TRAIN_DIR, "train", num_files=64))
+    results = parse_datasets(IN_VAL_DIR, "val", num_files=64)
+    results.extend(parse_datasets(IN_TRAIN_DIR, "train", num_files=64))
     random.shuffle(results)
 
     range = get_range(len(results), dataset_type="all")
@@ -51,27 +51,12 @@ def create_lmdb(dataset_path, range, atoms: list[any]):
     for i in range(range_start, range_end):
         create_single_lmdb(f"{dataset_path}/{i}", atoms[i:min(i + max_rows_in_output_lmdb, range_end)])
 
-
-
+# It's faster to read them one by one than parellelize this
 def parse_datasets(in_dir, in_dir_prefix, num_files):
-    def process_file(i):
-        return get_entries(in_dir, f"{in_dir_prefix}_{i}")
-    
-    with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_JOBS) as executor:
-        futures = []
-        for i in range(num_files):
-            futures.append(executor.submit(process_file, i))
-        
-        results = []
-        # Wait for all futures to complete and collect their results
-        for future in concurrent.futures.as_completed(futures):
-            try:
-                result = future.result()  # to raise any exceptions occurred
-                if result is not None:
-                    results.extend(result)
-            except Exception as e:
-                print(f"An error occurred: {e}")
-    
+    results = []
+    for i in range(num_files):
+        print(f"parsing {in_dir_prefix}_{i}")
+        results.extend(get_entries(in_dir, f"{in_dir_prefix}_{i}"))
     return results
 
 # this should be a list of pymatgen.io.ase.MSONAtoms
@@ -101,7 +86,6 @@ def create_single_lmdb(dataset_path, atoms: list[any]):
             atomic_numbers=atomic_numbers,
             natoms=natoms,
             fid=torch.LongTensor([fid]),
-            # tags=tags,
         )
 
         txn = db.begin(write=True)
