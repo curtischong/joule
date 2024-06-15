@@ -32,7 +32,6 @@ def download_heap(epoch):
     filename = os.path.join(target_folder, f"heap_contents_epoch_{epoch}.txt")
 
     with open(filename, "w") as file:
-        file.write("Downloading heap contents\n")
         file.write("Energy Heap: " + str(energy_heap) + "\n")
         file.write("Force Heap: " + str(force_heap) + "\n")
 
