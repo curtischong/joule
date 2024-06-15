@@ -38,9 +38,13 @@ def download_heap(epoch):
     os.makedirs(target_folder, exist_ok=True)
     filename = os.path.join(target_folder, f"heap_contents_epoch_{epoch}.txt")
 
+    heap_contents = {
+        "Energy Heap": energy_heap,
+        "Force Heap": force_heap
+    }
+
     with open(filename, "w") as file:
-        file.write("Energy Heap: " + str(energy_heap) + "\n")
-        file.write("Force Heap: " + str(force_heap) + "\n")
+        file.write(str(heap_contents))
 
 def clear_heap():
     global energy_heap, force_heap
