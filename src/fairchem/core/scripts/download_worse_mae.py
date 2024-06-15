@@ -6,17 +6,24 @@ heap_size_limit = 3
 energy_heap = []
 force_heap = []
 
-def process_loss_values(batch_energies, batch_forces, batch_path, data_idx):
+def process_loss_values(batch_energies, mean_batch_forces, batch_forces, batch_path, data_idx, batch_natoms):
     batch_size = batch_energies.shape[0]
+    start = 0
+
     for i in range(batch_size):
         energy = batch_energies[i].item()
-        force = batch_forces[i].item()
+        force = mean_batch_forces[i].item()
+
+        natoms_length = batch_natoms[i].item()
+        forces_split = batch_forces[start:start + natoms_length]
+        start += natoms_length
+        forces_per_atom = forces_split.tolist()
         
         formatted_batch_path = str(batch_path[i])
         formatted_data_idx = data_idx[i].item()
 
         heapq.heappush(energy_heap, (energy, formatted_batch_path, formatted_data_idx))
-        heapq.heappush(force_heap, (force, formatted_batch_path, formatted_data_idx))
+        heapq.heappush(force_heap, (force, forces_per_atom, formatted_batch_path, formatted_data_idx))
 
         if len(energy_heap) > heap_size_limit:
             heapq.heappop(energy_heap)
