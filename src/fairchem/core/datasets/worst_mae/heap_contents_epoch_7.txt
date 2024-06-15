@@ -1,2 +1,0 @@
-Energy Heap: [(19.22236442565918, 'datasets/lmdb/alexandria_10_val.lmdb', 8), (32.82526397705078, 'datasets/lmdb/alexandria_10_val.lmdb', 6), (69.4393539428711, 'datasets/lmdb/alexandria_10_val.lmdb', 5)]
-Force Heap: [(28.409881591796875, 'datasets/lmdb/alexandria_10_val.lmdb', 0), (77.12599182128906, 'datasets/lmdb/alexandria_10_val.lmdb', 6), (62.5971794128418, 'datasets/lmdb/alexandria_10_val.lmdb', 8)]
