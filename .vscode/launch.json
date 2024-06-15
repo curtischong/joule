@@ -99,6 +99,14 @@
             ],
         },
         {
+            "name": "create real mace db3",
+            "type": "python",
+            "request": "launch",
+            "program": "scripts/dataset_prep/create_real_mace_dataset_lmdb3.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+        },
+        {
             "name": "predict",
             "type": "python",
             "request": "launch",

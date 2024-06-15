@@ -35,7 +35,7 @@ T_co = TypeVar("T_co", covariant=True)
 @registry.register_dataset("trajectory_lmdb")
 class LmdbDataset(Dataset[T_co]):
     metadata_path: Path
-    sharded: bool
+    sharded: bool # TODO:(curtis): this bool isn't used. I need to verify with a run before we remove it
 
     r"""Dataset class to load from LMDB files containing relaxation
     trajectories or single point computations.
