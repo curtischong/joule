@@ -12,7 +12,7 @@ train1000:
 
 # 34 is the largest atomic number of the set of 20 most common elements
 trainall:
-	python main.py --mode=train --config-yml=$(CONFIG_YML) --dataset.train.src=$(LMDB_DATASET)train --dataset.val.src=$(LMDB_DATASET)val --model.max_num_elements=34 --amp
+	export NUMEXPR_MAX_THREADS=24 && python main.py --mode=train --config-yml=$(CONFIG_YML) --dataset.train.src=$(LMDB_DATASET)train --dataset.val.src=$(LMDB_DATASET)val --model.max_num_elements=34 --amp
 
 create_mace_dataset_lmdb:
 	python scripts/dataset_prep/create_mace_dataset_lmdb.py --config-yml=$(CONFIG_YML)
