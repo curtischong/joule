@@ -335,12 +335,19 @@ class OCPTrainer(BaseTrainer):
                 )
             )
 
-        energy = loss[0].squeeze()
-        forces = loss[1]
-        reshaped_forces = scatter_mean(forces, batch.batch)
+        energy_losses = loss[0].squeeze()
+        all_forces_losses = loss[1] # this is the loss contribution from EACH atom
+        forces_loss = scatter_mean(all_forces_losses, batch.batch)
+
+        pred_energies = out["energy"].squeeze()
+        pred_forces = out["forces"]
 
         if epoch % 2 == 0:
-            process_loss_values(energy, reshaped_forces, forces, batch.dataset_path, batch.data_idx, batch.natoms)
+            process_loss_values(energy_losses=energy_losses,
+                                forces_losses=forces_loss,
+                                pred_energies=pred_energies,
+                                pred_forces=pred_forces,
+                                batch=batch)
         else:
             if heap_is_not_empty():
                 download_heap(epoch)
@@ -350,8 +357,8 @@ class OCPTrainer(BaseTrainer):
         for lc in loss:
             assert hasattr(lc, "grad_fn")
         
-        energy_loss = energy.sum()
-        forces_loss = reshaped_forces.sum()
+        energy_loss = energy_losses.sum()
+        forces_loss = forces_loss.sum()
         return {
             "total": energy_loss + forces_loss,
             "energy": energy_loss,

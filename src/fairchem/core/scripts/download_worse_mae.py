@@ -1,51 +1,80 @@
 import heapq
 import os
+import numpy as np
+import torch
 import json
 
-heap_size_limit = 3
-
+# TODO: yeet the heap and just store the 50 worse predictions from the first 50 batches of the epoch.
 energy_heap = []
 force_heap = []
+heap_size_limit = 3
 
-def process_loss_values(batch_energies, mean_batch_forces, batch_forces, batch_path, data_idx, batch_natoms):
-    batch_size = batch_energies.shape[0]
-    start = 0
+def process_loss_values(*, energy_losses, forces_losses, pred_energies, pred_forces, batch):
+    # get the worse energy prediction in the batch
+    worse_idx = energy_losses.argmax()
+    energy_loss = energy_losses[worse_idx].item() # break the computational graph, so it's not retained
+    pred_energy = pred_energies[worse_idx].item()
 
-    for i in range(batch_size):
-        energy = batch_energies[i].item()
-        force = mean_batch_forces[i].item()
+    dataset_path = batch.dataset_path[worse_idx]
+    data_idx = batch.data_idx[worse_idx].item()
 
-        natoms_length = batch_natoms[i].item()
-        forces_split = batch_forces[start:start + natoms_length]
-        start += natoms_length
-        forces_per_atom = forces_split.tolist()
-        
-        formatted_batch_path = str(batch_path[i])
-        formatted_data_idx = data_idx[i].item()
+    worse_energy = (energy_loss, pred_energy, dataset_path, data_idx)
+    heapq.heappush(energy_heap, worse_energy)
 
-        heapq.heappush(energy_heap, (energy, formatted_batch_path, formatted_data_idx))
-        heapq.heappush(force_heap, (force, forces_per_atom, formatted_batch_path, formatted_data_idx))
+    # get the worse forces prediction in the batch
+    worse_idx = forces_losses.argmax()
+    forces_loss = forces_losses[worse_idx].item() # break the computational graph, so it's not retained
 
-        if len(energy_heap) > heap_size_limit:
-            heapq.heappop(energy_heap)
-        if len(force_heap) > heap_size_limit:
-            heapq.heappop(force_heap)
+    # the start and end idx for the sample's forces
+    start = torch.sum(batch.natoms[0: worse_idx])
+    end = start + batch.natoms[worse_idx]
+    pred_forces = pred_forces[start:end].detach()
+    
+    dataset_path = batch.dataset_path[worse_idx]
+    data_idx = batch.data_idx[worse_idx].item()
+
+    force_data = (forces_loss, pred_forces, dataset_path, data_idx)
+    heapq.heappush(force_heap, force_data)
+
+    if len(energy_heap) > heap_size_limit:
+        heapq.heappop(energy_heap)
+    if len(force_heap) > heap_size_limit:
+        heapq.heappop(force_heap)
 
 def heap_is_not_empty():
     return bool(energy_heap) or bool(force_heap)
 
+def tuple_to_dict(keys, tuple):
+    d = {}
+    for key, value in zip(keys, tuple):
+        if isinstance(value, torch.Tensor):
+            value = value.tolist()
+        elif isinstance(value, np.ndarray):
+            value = value.tolist()
+        else:
+            value = value
+        d[key] = value
+    return d
+
 def download_heap(epoch):
     target_folder = os.path.join("datasets", "worst_mae")
     os.makedirs(target_folder, exist_ok=True)
-    filename = os.path.join(target_folder, f"heap_contents_epoch_{epoch}.json")
+    filename = os.path.join(target_folder, f"worse_preds_epoch_{epoch}.json")
+    
+    energy_keys = ["energy_loss", "pred_energy", "dataset_path", "data_idx"]
+    force_keys = ["forces_loss", "pred_forces", "dataset_path", "data_idx"]
+
+    energy_heap_as_dict = [tuple_to_dict(energy_keys, entry) for entry in energy_heap ]
+    force_heap_as_dict = [tuple_to_dict(force_keys, entry) for entry in force_heap ]
 
     heap_contents = {
-        "Energy Heap": energy_heap,
-        "Force Heap": force_heap
+        "worse_energy": energy_heap_as_dict,
+        "worse_forces": force_heap_as_dict
     }
 
+    #np.save(filename, heap_contents)
     with open(filename, "w") as file:
-        json.dump(heap_contents, file)
+        json.dump(heap_contents, file, indent=4)
         
 def clear_heap():
     global energy_heap, force_heap
