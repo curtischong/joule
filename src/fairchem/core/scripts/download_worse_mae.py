@@ -1,5 +1,6 @@
 import heapq
 import os
+import json
 
 heap_size_limit = 3
 
@@ -34,9 +35,9 @@ def heap_is_not_empty():
     return bool(energy_heap) or bool(force_heap)
 
 def download_heap(epoch):
-    target_folder = os.path.join("packages", "fairchem-demo-ocpapi", "src", "fairchem", "core", "datasets", "worst_mae")
+    target_folder = os.path.join("datasets", "worst_mae")
     os.makedirs(target_folder, exist_ok=True)
-    filename = os.path.join(target_folder, f"heap_contents_epoch_{epoch}.txt")
+    filename = os.path.join(target_folder, f"heap_contents_epoch_{epoch}.json")
 
     heap_contents = {
         "Energy Heap": energy_heap,
@@ -44,8 +45,8 @@ def download_heap(epoch):
     }
 
     with open(filename, "w") as file:
-        file.write(str(heap_contents))
-
+        json.dump(heap_contents, file)
+        
 def clear_heap():
     global energy_heap, force_heap
     energy_heap.clear()

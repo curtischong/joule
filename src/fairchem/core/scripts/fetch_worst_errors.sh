@@ -15,7 +15,7 @@ if [[ -z "$HOSTNAME" || -z "$USER" ]]; then
 fi
 
 # Construct the SCP command
-SCP_COMMAND="scp -i ~/.ssh/transistor5.pem -r ${USER}@${HOSTNAME}:/home/ubuntu/joule/src/fairchem/core/datasets/worst_mae ~/Desktop/worst_errors"
+SCP_COMMAND="scp -i ~/.ssh/transistor5.pem -r ${USER}@${HOSTNAME}/home/ubuntu/joule/datasets/worst_mae ~/Desktop/worst_errors"
 
 # Execute the SCP command
 echo "Executing: $SCP_COMMAND"
