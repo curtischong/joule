@@ -43,8 +43,8 @@ model:
   max_num_elements: 90
 
 optim:
-  batch_size: 30
-  eval_batch_size: 30
+  batch_size: 40
+  eval_batch_size: 40
   num_workers: 8 # do not increase too high. it'll cause gpu memeory pinning issues
   lr_initial: 0.0003
   optimizer: AdamW
