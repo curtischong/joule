@@ -792,6 +792,7 @@ class BaseTrainer(ABC):
                 max_norm=self.clip_grad_norm,
             )
             if self.logger is not None:
+                # print("grad_norm", grad_norm)
                 self.logger.log({"grad_norm": grad_norm}, step=self.step, split="train")
         if self.scaler:
             self.scaler.step(self.optimizer)
