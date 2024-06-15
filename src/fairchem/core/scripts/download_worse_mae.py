@@ -6,11 +6,12 @@ heap_size_limit = 3
 energy_heap = []
 force_heap = []
 
-def process_loss_values(loss_values, batch_path, data_idx):
-    batch_energies, batch_forces = loss_values
-
-    for i, (energy, force_subarray) in enumerate(zip(batch_energies, batch_forces)):
-        force = sum(force_subarray) / len(force_subarray)
+def process_loss_values(batch_energies, batch_forces, batch_path, data_idx):
+    batch_size = batch_energies.shape[0]
+    for i in range(batch_size):
+        energy = batch_energies[i].item()
+        force = batch_forces[i].item()
+        
         formatted_batch_path = str(batch_path[i])
         formatted_data_idx = data_idx[i].item()
 

@@ -25,6 +25,7 @@ from fairchem.core.modules.evaluator import Evaluator
 from fairchem.core.modules.scaling.util import ensure_fitted
 from fairchem.core.trainers.base_trainer import BaseTrainer
 from fairchem.core.scripts.download_worse_mae import process_loss_values, heap_is_not_empty, download_heap, clear_heap
+from torch_scatter import scatter_mean
 
 @registry.register_trainer("ocp")
 @registry.register_trainer("energy")
@@ -331,28 +332,22 @@ class OCPTrainer(BaseTrainer):
                 )
             )
 
-        energy = loss[0].squeeze().tolist()
-        forces = loss[1].squeeze().tolist()
-        reshaped_forces = []
-        idx = 0
-        for natoms in batch.natoms:
-            reshaped_forces.append(forces[idx:idx + natoms])
-            idx += natoms
+        energy = loss[0].squeeze()
+        forces = loss[1]
+        reshaped_forces = scatter_mean(forces, batch.batch)
 
-        if energy and forces:
-            loss_values = [energy, reshaped_forces]
-            if epoch % 10 == 0:
-                process_loss_values(loss_values, batch.dataset_path, batch.data_idx)
-            else:
-                if heap_is_not_empty():
-                    download_heap()
-                clear_heap()
+        if epoch % 10 == 0:
+            process_loss_values(energy, reshaped_forces, batch.dataset_path, batch.data_idx)
+        else:
+            if heap_is_not_empty():
+                download_heap(epoch)
+            clear_heap()
 
         # Sanity check to make sure the compute graph is correct.
         for lc in loss:
             assert hasattr(lc, "grad_fn")
 
-        return sum(loss)
+        return energy.sum() + reshaped_forces.sum()
 
     def _compute_metrics(self, out, batch, evaluator, metrics=None):
         if metrics is None:
