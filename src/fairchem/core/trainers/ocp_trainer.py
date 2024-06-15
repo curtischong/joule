@@ -339,8 +339,8 @@ class OCPTrainer(BaseTrainer):
         forces = loss[1]
         reshaped_forces = scatter_mean(forces, batch.batch)
 
-        if epoch % 10 == 0:
-            process_loss_values(energy, reshaped_forces, batch.dataset_path, batch.data_idx)
+        if epoch % 2 == 0:
+            process_loss_values(energy, reshaped_forces, forces, batch.dataset_path, batch.data_idx, batch.natoms)
         else:
             if heap_is_not_empty():
                 download_heap(epoch)
