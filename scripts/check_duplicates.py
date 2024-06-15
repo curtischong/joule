@@ -19,36 +19,45 @@ OUT_VAL_DIR = "datasets/lmdb/real_mace3/val"
 
 MAX_JOBS = 8
 
+hashed = {} # hash -> idx of the entry
 
 def main():
     os.makedirs(OUT_TRAIN_DIR, exist_ok=True)
     os.makedirs(OUT_VAL_DIR, exist_ok=True)
 
 
-    parse_datasets(IN_TRAIN_DIR, OUT_TRAIN_DIR, "train", num_files=64)
-    parse_datasets(IN_VAL_DIR, OUT_VAL_DIR, "val", num_files=64)
+    results = parse_datasets(IN_TRAIN_DIR, "train", num_files=64)
+    results.extend(parse_datasets(IN_VAL_DIR, "val", num_files=64))
 
-
-def parse_datasets(in_dir, out_dir, in_dir_prefix, num_files):
-    def process_file(i):
-        entries = get_entries(in_dir, f"{in_dir_prefix}_{i}")
-        if len(entries) == 0:
+    for i, res in enumerate(results):
+        hash = str(res.get_positions() + res.get_atomic_numbers() + res.get_cell())
+        if hash in hashed:
+            print(f"duplicate found at {i} and {hashed[hash]}")
+            print(hash)
             return
-        db_name = f"{out_dir}/{i}"
-        create_lmdb(db_name, entries)
+        hashed[hash] = res.idx
+
+
+def parse_datasets(in_dir, in_dir_prefix, num_files):
+    def process_file(i):
+        return get_entries(in_dir, f"{in_dir_prefix}_{i}")
     
     with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_JOBS) as executor:
         futures = []
         for i in range(num_files):
             futures.append(executor.submit(process_file, i))
         
-        # Wait for all futures to complete
+        results = []
+        # Wait for all futures to complete and collect their results
         for future in concurrent.futures.as_completed(futures):
             try:
-                future.result()  # to raise any exceptions occurred
+                result = future.result()  # to raise any exceptions occurred
+                if result is not None:
+                    results.extend(result)
             except Exception as e:
                 print(f"An error occurred: {e}")
-
+    
+    return results
 # this should be a list of pymatgen.io.ase.MSONAtoms
 def create_lmdb(dataset_path, atoms: list[any]):
     db = lmdb.open(
@@ -114,8 +123,8 @@ def get_entries(in_dir, file_name):
             atomic_numbers = config_group['atomic_numbers'][:]
 
             # filter out samples
-            if not all([element in most_common_elements_only_one_per_sample for element in atomic_numbers]):
-                continue
+            # if not all([element in most_common_elements_only_one_per_sample for element in atomic_numbers]):
+            #     continue
 
 
             cell = config_group['cell'][:]

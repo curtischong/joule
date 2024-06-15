@@ -9,13 +9,18 @@ import time
 from ase.calculators.singlepoint import SinglePointCalculator
 import h5py
 import concurrent.futures
-
 from torch_geometric.data import Data
+from scripts.dataset_prep.dataset_prep_common import get_range
+import random
 
 IN_TRAIN_DIR = "datasets/real_mace/train"
 IN_VAL_DIR = "datasets/real_mace/val"
+
 OUT_TRAIN_DIR = "datasets/lmdb/real_mace3/train"
 OUT_VAL_DIR = "datasets/lmdb/real_mace3/val"
+OUT_TEST_DIR = "datasets/lmdb/real_mace3/test"
+
+max_rows_in_output_lmdb = 25000
 
 most_common_elements_only_one_per_sample = [8, 3, 15, 12, 16, 1, 25, 7, 26, 14, 9, 6, 29, 27, 11, 23, 19, 20, 13, 17] 
 MAX_JOBS = 8
@@ -26,32 +31,51 @@ def main():
     os.makedirs(OUT_VAL_DIR, exist_ok=True)
 
 
-    # parse_datasets(IN_TRAIN_DIR, OUT_TRAIN_DIR, "train", num_files=64)
-    parse_datasets(IN_VAL_DIR, OUT_VAL_DIR, "val", num_files=64)
+    results = parse_datasets(IN_VAL_DIR, OUT_VAL_DIR, "val", num_files=64)
+    results.extend(parse_datasets(IN_TRAIN_DIR, OUT_TRAIN_DIR, "train", num_files=64))
+    random.shuffle(results)
+
+    range = get_range(len(results), dataset_type="all")
+
+    train_range = range[0]
+    val_range = range[1]
+    test_range = range[2]
+
+    create_lmdb(OUT_TRAIN_DIR, train_range, results)
+    create_lmdb(OUT_VAL_DIR, val_range, results)
+    create_lmdb(OUT_TEST_DIR, test_range, results)
+
+def create_lmdb(dataset_path, range, atoms: list[any]):
+    range_start = range[0]
+    range_end = range[1]
+    for i in range(range_start, range_end):
+        create_single_lmdb(f"{dataset_path}/{i}", atoms[i:min(i + max_rows_in_output_lmdb, range_end)])
 
 
-def parse_datasets(in_dir, out_dir, in_dir_prefix, num_files):
+
+def parse_datasets(in_dir, in_dir_prefix, num_files):
     def process_file(i):
-        entries = get_entries(in_dir, f"{in_dir_prefix}_{i}")
-        if len(entries) == 0:
-            return
-        db_name = f"{out_dir}/{i}"
-        create_lmdb(db_name, entries)
+        return get_entries(in_dir, f"{in_dir_prefix}_{i}")
     
     with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_JOBS) as executor:
         futures = []
         for i in range(num_files):
             futures.append(executor.submit(process_file, i))
         
-        # Wait for all futures to complete
+        results = []
+        # Wait for all futures to complete and collect their results
         for future in concurrent.futures.as_completed(futures):
             try:
-                future.result()  # to raise any exceptions occurred
+                result = future.result()  # to raise any exceptions occurred
+                if result is not None:
+                    results.extend(result)
             except Exception as e:
                 print(f"An error occurred: {e}")
+    
+    return results
 
 # this should be a list of pymatgen.io.ase.MSONAtoms
-def create_lmdb(dataset_path, atoms: list[any]):
+def create_single_lmdb(dataset_path, atoms: list[any]):
     db = lmdb.open(
         f"{dataset_path}.lmdb",
         map_size=1099511627776 * 2, # two terabytes is the max size of the db

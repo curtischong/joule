@@ -130,5 +130,14 @@
             "justMyCode": true,
             "args": [],
         },
+        {
+            "name": "check duplicates",
+            "type": "python",
+            "request": "launch",
+            "program": "scripts/check_duplicates.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [],
+        },
     ]
 }
