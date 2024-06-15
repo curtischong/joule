@@ -31,20 +31,10 @@ def download_heap(epoch):
     os.makedirs(target_folder, exist_ok=True)
     filename = os.path.join(target_folder, f"heap_contents_epoch_{epoch}.txt")
 
-    print("Target folder:", target_folder)
-    print("Filename:", filename)
-    print("Downloading heap contents")
-    print("Energy Heap:", energy_heap)
-    print("Force Heap:", force_heap)
-
-    # target_folder = os.path.join("packages", "fairchem-demo-ocpapi", "src", "fairchem", "core", "datasets", "worst_mae")
-    # os.makedirs(target_folder, exist_ok=True)
-    # filename = os.path.join(target_folder, f"heap_contents_epoch_{epoch}.txt")
-
-    # with open(filename, "w") as file:
-    #     file.write("Downloading heap contents\n")
-    #     file.write("Energy Heap: " + str(energy_heap) + "\n")
-    #     file.write("Force Heap: " + str(force_heap) + "\n")
+    with open(filename, "w") as file:
+        file.write("Downloading heap contents\n")
+        file.write("Energy Heap: " + str(energy_heap) + "\n")
+        file.write("Force Heap: " + str(force_heap) + "\n")
 
 def clear_heap():
     global energy_heap, force_heap
