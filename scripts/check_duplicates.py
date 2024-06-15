@@ -21,43 +21,60 @@ MAX_JOBS = 8
 
 hashed = {} # hash -> idx of the entry
 
+"""
+duplicate found at 9000 and 3666
+[[1.17386892 0.71884384 3.89330044]
+ [0.59527832 0.36452604 1.97431853]
+ [1.75246006 1.07315113 5.81228413]][3 8 8]Cell([[2.30281076, -0.39696027, 2.29894373], [0.69315251, 2.23160376, 2.29894368], [-0.648
+23271, -0.39696027, 3.18871066]])
+"""
+
 def main():
     os.makedirs(OUT_TRAIN_DIR, exist_ok=True)
     os.makedirs(OUT_VAL_DIR, exist_ok=True)
 
 
-    results = parse_datasets(IN_TRAIN_DIR, "train", num_files=64)
-    results.extend(parse_datasets(IN_VAL_DIR, "val", num_files=64))
+    results = parse_datasets(IN_TRAIN_DIR, "train", num_files=1) # TODO: increase num_files
+    # results.extend(parse_datasets(IN_VAL_DIR, "val", num_files=64))
 
     for i, res in enumerate(results):
-        hash = str(res.get_positions() + res.get_atomic_numbers() + res.get_cell())
+        hash = str(res.get_positions()) + str(res.get_atomic_numbers()) + str(res.get_cell())
         if hash in hashed:
             print(f"duplicate found at {i} and {hashed[hash]}")
             print(hash)
             return
-        hashed[hash] = res.idx
-
+        hashed[hash] = i
+    print("all done")
 
 def parse_datasets(in_dir, in_dir_prefix, num_files):
-    def process_file(i):
-        return get_entries(in_dir, f"{in_dir_prefix}_{i}")
-    
-    with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_JOBS) as executor:
-        futures = []
-        for i in range(num_files):
-            futures.append(executor.submit(process_file, i))
-        
-        results = []
-        # Wait for all futures to complete and collect their results
-        for future in concurrent.futures.as_completed(futures):
-            try:
-                result = future.result()  # to raise any exceptions occurred
-                if result is not None:
-                    results.extend(result)
-            except Exception as e:
-                print(f"An error occurred: {e}")
-    
+    results = []
+    for i in range(num_files):
+        print(f"parsing {in_dir_prefix}_{i}")
+        results.extend(get_entries(in_dir, f"{in_dir_prefix}_{i}"))
     return results
+
+
+# def parse_datasets(in_dir, in_dir_prefix, num_files):
+#     def process_file(i):
+#         return get_entries(in_dir, f"{in_dir_prefix}_{i}")
+    
+#     with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_JOBS) as executor:
+#         futures = []
+#         for i in range(num_files):
+#             futures.append(executor.submit(process_file, i))
+        
+#         results = []
+#         # Wait for all futures to complete and collect their results
+#         for future in concurrent.futures.as_completed(futures):
+#             try:
+#                 result = future.result()  # to raise any exceptions occurred
+#                 if result is not None:
+#                     results.extend(result)
+#             except Exception as e:
+#                 print(f"An error occurred: {e}")
+    
+#     return results
+
 # this should be a list of pymatgen.io.ase.MSONAtoms
 def create_lmdb(dataset_path, atoms: list[any]):
     db = lmdb.open(
