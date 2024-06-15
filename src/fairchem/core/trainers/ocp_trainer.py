@@ -160,10 +160,13 @@ class OCPTrainer(BaseTrainer):
                     self.evaluator,
                     self.metrics,
                 )
-                self.metrics = self.evaluator.update("loss", loss.item(), self.metrics)
+                # self.metrics = self.evaluator.update("loss", loss.item(), self.metrics)
+                for key in loss:
+                    self.metrics = self.evaluator.update(f"loss_{key}", loss[key].item(), self.metrics)
 
-                loss = self.scaler.scale(loss) if self.scaler else loss
-                self._backward(loss)
+                total_loss = loss["total"]
+                total_loss = self.scaler.scale(total_loss) if self.scaler else total_loss
+                self._backward(total_loss)
 
                 # Log metrics.
                 log_dict = {k: self.metrics[k]["metric"] for k in self.metrics}
@@ -346,8 +349,14 @@ class OCPTrainer(BaseTrainer):
         # Sanity check to make sure the compute graph is correct.
         for lc in loss:
             assert hasattr(lc, "grad_fn")
-
-        return energy.sum() + reshaped_forces.sum()
+        
+        energy_loss = energy.sum()
+        forces_loss = reshaped_forces.sum()
+        return {
+            "total": energy_loss + forces_loss,
+            "energy": energy_loss,
+            "forces": forces_loss,
+        }
 
     def _compute_metrics(self, out, batch, evaluator, metrics=None):
         if metrics is None:

@@ -40,7 +40,7 @@ loss_functions:
       reduction: "none"
   - forces:
       fn: l2mae
-      coefficient: 10000
+      coefficient: 25
       reduction: "none"
 
 evaluation_metrics:
