@@ -91,7 +91,7 @@
             "name": "create real mace db",
             "type": "python",
             "request": "launch",
-            "program": "scripts/dataset_prep/create_real_mace_dataset_lmdb.py",
+            "program": "scripts/dataset_prep/create_real_mace_dataset_lmdb2.py",
             "console": "integratedTerminal",
             "justMyCode": true,
             "args": [

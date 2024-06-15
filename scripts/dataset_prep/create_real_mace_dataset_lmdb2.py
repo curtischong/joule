@@ -39,7 +39,7 @@ def main():
     os.makedirs(OUT_VAL_DIR, exist_ok=True)
 
 
-    parse_datasets(config, IN_TRAIN_DIR, OUT_TRAIN_DIR, "train", num_files=64)
+    # parse_datasets(config, IN_TRAIN_DIR, OUT_TRAIN_DIR, "train", num_files=64)
     parse_datasets(config, IN_VAL_DIR, OUT_VAL_DIR, "val", num_files=64)
 
 
