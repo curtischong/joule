@@ -34,6 +34,8 @@
                 "--config-yml=configs/s2ef/all/joule/upgraded_escn.yml",
                 "--dataset.train.src=datasets/lmdb/alexandria_10_train.lmdb",
                 "--dataset.train.src=datasets/lmdb/alexandria_10_val.lmdb",
+                "--optim.batch_size=6",
+                "--optim.eval_batch_size=6",
                 "--amp",
             ],
             // "env": {

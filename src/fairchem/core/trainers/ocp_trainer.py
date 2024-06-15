@@ -24,7 +24,8 @@ from fairchem.core.common.utils import cg_change_mat, check_traj_files, irreps_s
 from fairchem.core.modules.evaluator import Evaluator
 from fairchem.core.modules.scaling.util import ensure_fitted
 from fairchem.core.trainers.base_trainer import BaseTrainer
-
+from fairchem.core.scripts.download_worse_mae import process_loss_values, heap_is_not_empty, download_heap, clear_heap
+from torch_scatter import scatter_mean
 
 @registry.register_trainer("ocp")
 @registry.register_trainer("energy")
@@ -150,7 +151,7 @@ class OCPTrainer(BaseTrainer):
                 # Forward, loss, backward.
                 with torch.cuda.amp.autocast(enabled=self.scaler is not None):
                     out = self._forward(batch)
-                    loss = self._compute_loss(out, batch)
+                    loss = self._compute_loss(out, batch, epoch_int)
 
                 # Compute metrics.
                 self.metrics = self._compute_metrics(
@@ -287,7 +288,7 @@ class OCPTrainer(BaseTrainer):
 
         return outputs
 
-    def _compute_loss(self, out, batch):
+    def _compute_loss(self, out, batch, epoch):
         batch_size = batch.natoms.numel()
         fixed = batch.fixed
         mask = fixed == 0
@@ -331,11 +332,22 @@ class OCPTrainer(BaseTrainer):
                 )
             )
 
+        energy = loss[0].squeeze()
+        forces = loss[1]
+        reshaped_forces = scatter_mean(forces, batch.batch)
+
+        if epoch % 10 == 0:
+            process_loss_values(energy, reshaped_forces, batch.dataset_path, batch.data_idx)
+        else:
+            if heap_is_not_empty():
+                download_heap(epoch)
+            clear_heap()
+
         # Sanity check to make sure the compute graph is correct.
         for lc in loss:
             assert hasattr(lc, "grad_fn")
 
-        return sum(loss)
+        return energy.sum() + reshaped_forces.sum()
 
     def _compute_metrics(self, out, batch, evaluator, metrics=None):
         if metrics is None:

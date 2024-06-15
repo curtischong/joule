@@ -72,7 +72,7 @@ class ueSCN(BaseModel):
         otf_graph: bool = False,
         max_neighbors: int = 40,
         cutoff: float = 8.0,
-        max_num_elements: int = 34, # 34 is the largest atomic number of the set of 20 most common elements
+        max_num_elements: int = 90,
         num_layers: int = 8,
         lmax_list: list[int] | None = None,
         mmax_list: list[int] | None = None,

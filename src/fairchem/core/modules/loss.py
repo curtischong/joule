@@ -12,7 +12,7 @@ class L2MAELoss(nn.Module):
     def __init__(self, reduction: str = "mean") -> None:
         super().__init__()
         self.reduction = reduction
-        assert reduction in ["mean", "sum"]
+        assert reduction in ["mean", "sum", 'none']
 
     def forward(self, input: torch.Tensor, target: torch.Tensor):
         dists = torch.norm(input - target, p=2, dim=-1)
@@ -20,6 +20,8 @@ class L2MAELoss(nn.Module):
             return torch.mean(dists)
         elif self.reduction == "sum":
             return torch.sum(dists)
+        elif self.reduction == "none":
+            return dists
         return None
 
 
@@ -56,14 +58,13 @@ class DDPLoss(nn.Module):
         self.loss_fn = loss_fn
         self.loss_name = loss_name
         self.reduction = reduction
-        assert reduction in ["mean", "mean_all", "sum"]
+        assert reduction in ["mean", "mean_all", "sum", "none"]
 
         # for forces, we want to sum over xyz errors and average over batches/atoms (mean)
         # for other metrics, we want to average over all axes (mean_all) or leave as a sum (sum)
         if reduction == "mean_all":
-            self.loss_fn.reduction = "mean"
-        else:
-            self.loss_fn.reduction = "sum"
+            reduction = "mean"
+        self.loss_fn.reduction = reduction
 
     def forward(
         self,
