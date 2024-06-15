@@ -288,7 +288,7 @@ class OCPTrainer(BaseTrainer):
 
         return outputs
 
-    def _compute_loss(self, out, batch, epoch=None):
+    def _compute_loss(self, out, batch, epoch):
         batch_size = batch.natoms.numel()
         fixed = batch.fixed
         mask = fixed == 0
