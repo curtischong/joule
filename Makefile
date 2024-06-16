@@ -1,5 +1,5 @@
 CONFIG_YML=configs/s2ef/all/joule/upgraded_escn.yml
-LMDB_DATASET=datasets/lmdb/real_mace/
+LMDB_DATASET=datasets/lmdb/real_mace3/
 ALEXANDRIA_DATASET=datasets/lmdb/
 
 train1:

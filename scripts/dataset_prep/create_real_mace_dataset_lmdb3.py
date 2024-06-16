@@ -1,16 +1,12 @@
-from ase import Atoms
 import lmdb
 import pickle
 from tqdm import tqdm
 import torch
 import os
-import numpy as np
 import time
-from ase.calculators.singlepoint import SinglePointCalculator
 import h5py
-import concurrent.futures
 from torch_geometric.data import Data
-from dataset_prep_common import get_range
+from dataset_prep_common import generate_ranges
 import random
 
 IN_TRAIN_DIR = "datasets/real_mace/train"
@@ -36,7 +32,7 @@ def main():
     results = remove_duplicates(results)
     random.shuffle(results) # shuffle AFTER we remove duplicates so we can track the original index of the duplicated samples
 
-    range = get_range(len(results), dataset_type="all", start_at_1=False)
+    range = generate_ranges(len(results), split_frac=[0.7, 0.15, 0.15], start_at_1=False)
 
     train_range = range[0]
     val_range = range[1]
@@ -108,7 +104,7 @@ def create_single_lmdb(dataset_path, atoms: list[any]):
 
     for fid, data in tqdm(enumerate(atoms), total=num_samples):
         positions = torch.Tensor(data["positions"])
-        cell = torch.Tensor(np.array(data["cell"])).view(1, 3, 3)
+        cell = torch.Tensor(data["cell"]).view(1, 3, 3)
         atomic_numbers = torch.Tensor(data["atomic_numbers"])
         natoms = positions.shape[0]
 
@@ -118,6 +114,7 @@ def create_single_lmdb(dataset_path, atoms: list[any]):
             atomic_numbers=atomic_numbers,
             natoms=natoms,
             fid=torch.LongTensor([fid]),
+            fixed=torch.full((natoms,), 0, dtype=torch.int8), # make all the atoms fixed, so the model's prediction for each atom contributes to the loss
         )
 
         txn = db.begin(write=True)

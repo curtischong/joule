@@ -18,7 +18,7 @@ def parse_config():
 def get_range(n: int, dataset_type: str):
     # shuffle the system paths so when we generate the ranges, we ahve a good mix of all the datapoints
     if dataset_type == "all":
-        return generate_ranges(n, split_frac=[0.7, 0.15, 0.15])
+        return generate_ranges(n, split_frac=[0.7, 0.15, 0.15], start_at_1=True)
     elif dataset_type == "10000":
         assert n >= 30000, "The dataset is too small to generate ranges for 10000 datapoints"
         return [[0, 10000], [10000, 20000], [20000, 30000]]
