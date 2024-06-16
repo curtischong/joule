@@ -7,7 +7,7 @@ import json
 # TODO: yeet the heap and just store the 50 worse predictions from the first 50 batches of the epoch.
 energy_heap = []
 force_heap = []
-heap_size_limit = 3
+heap_size_limit = 50
 
 def process_loss_values(*, energy_losses, forces_losses, pred_energies, pred_forces, batch):
     # get the worse energy prediction in the batch
