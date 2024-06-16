@@ -36,8 +36,7 @@ def main():
     results = remove_duplicates(results)
     random.shuffle(results) # shuffle AFTER we remove duplicates so we can track the original index of the duplicated samples
 
-    range = get_range(len(results), dataset_type="all")
-    range[0] = [range[0][0] - 1, range[0][1]]
+    range = get_range(len(results), dataset_type="all", start_at_1=False)
 
     train_range = range[0]
     val_range = range[1]

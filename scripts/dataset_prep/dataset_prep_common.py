@@ -37,11 +37,14 @@ def get_range(n: int, dataset_type: str):
     else:
         raise ValueError(f"Unknown dataset type: {dataset_type}")
 
-def generate_ranges(n:int, split_frac=[0.7, 0.15, 0.15]):
+def generate_ranges(n:int, split_frac=[0.7, 0.15, 0.15], start_at_1=True):
     assert sum(split_frac) == 1, "The split fractions must sum to 1."
 
     ranges = []
-    start = 1 # the first file is starts at 1 NOT 0
+    if start_at_1:
+        start = 1 # have the option to start at 1 since the first file in the mace-mp-0 dataset starts at 1 NOT 0
+    else:
+        start = 0
     
     for frac in split_frac:
         end = start + int(n * frac)
