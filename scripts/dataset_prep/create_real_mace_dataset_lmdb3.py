@@ -116,6 +116,8 @@ def create_single_lmdb(dataset_path, atoms: list[any]):
             natoms=natoms,
             fid=torch.LongTensor([fid]),
             fixed=torch.full((natoms,), 0, dtype=torch.int8), # make all the atoms fixed, so the model's prediction for each atom contributes to the loss
+            energy=torch.Tensor([data["energy"]]),
+            forces=torch.Tensor(data["forces"]),
         )
 
         txn = db.begin(write=True)
