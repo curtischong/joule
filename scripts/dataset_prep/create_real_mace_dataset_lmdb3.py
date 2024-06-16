@@ -54,7 +54,7 @@ def remove_duplicates(results):
     for i, res in enumerate(results):
         hash = str(res["positions"]) + str(res["atomic_numbers"]) + str(res["cell"])
         if hash in unique_results:
-            print(f"duplicate found at {i} and {unique_results[hash]}")
+            print(f"duplicate found at {i}")
             # print(hash)
             num_duplicates += 1
             duplicated_results.add(hash)
