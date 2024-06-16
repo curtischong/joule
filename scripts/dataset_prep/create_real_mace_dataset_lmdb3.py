@@ -137,6 +137,7 @@ def create_single_lmdb(dataset_path, atoms: list[any]):
     print(f"Time to create lmdb: {end_time - start_time}")
 
 
+# this file is just for debugging
 def print_all_groups(hdf5_file, group_name='/'):
     group = hdf5_file[group_name]
     for key in group.keys():
@@ -149,7 +150,6 @@ def get_entries(in_dir, file_name):
 
     with h5py.File(f"{in_dir}/{file_name}.h5", 'r') as hdf5_file:
         num_configs = len(hdf5_file["config_batch_0"])
-        # num_configs = 1000
         for i in tqdm(range(num_configs)):
             config_group = hdf5_file[f'config_batch_0/config_{i}']
             atomic_numbers = config_group['atomic_numbers'][:]
