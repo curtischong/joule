@@ -14,8 +14,8 @@
             "args": [
                 "--mode=train",
                 "--config-yml=configs/s2ef/all/joule/upgraded_escn.yml",
-                "--dataset.train.src=datasets/lmdb/real_mace/train",
-                "--dataset.val.src=datasets/lmdb/real_mace/val",
+                "--dataset.train.src=datasets/lmdb/real_mace3/train",
+                "--dataset.val.src=datasets/lmdb/real_mace3/val",
                 "--model.max_num_elements=34",
                 "--amp",
             ],
