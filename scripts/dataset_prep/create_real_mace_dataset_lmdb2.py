@@ -40,7 +40,7 @@ def main():
 
 
     parse_datasets(config, IN_TRAIN_DIR, OUT_TRAIN_DIR, "train", num_files=64)
-    parse_datasets(config, IN_VAL_DIR, OUT_VAL_DIR, "val", num_files=64)
+    # parse_datasets(config, IN_VAL_DIR, OUT_VAL_DIR, "val", num_files=64)
 
 
 def parse_datasets(config, in_dir, out_dir, in_dir_prefix, num_files):
@@ -104,7 +104,7 @@ def create_lmdb(config, dataset_path, atoms: list[pymatgen.io.ase.MSONAtoms]):
         # no neighbor edge case check
         if data.edge_index.shape[1] == 0:
             print("no neighbors. skipping. fid=", fid)
-            continue
+            raise Exception("no neighbors. skipping")
 
         txn = db.begin(write=True)
         txn.put(f"{fid}".encode("ascii"), pickle.dumps(data, protocol=-1))

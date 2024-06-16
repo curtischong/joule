@@ -1,5 +1,7 @@
 import h5py
 from tqdm import tqdm
+
+# when we say "x" satisfy this, we're not including the validation dataset. Also these numbers are WITH duplicates (i.e. there may be multiple systems with the same atoms, atomic numbers, and cell)
 most_common_elements = set([8, 1, 9, 16, 15, 7, 3, 12, 6, 14, 17, 26, 34, 5, 25, 13, 11, 23, 19, 27]) # 305864 satisfy this
 curtis_most_important =set([5, 6, 7, 8, 11, 12, 13, 14, 15, 20, 22, 24, 26, 27, 29, 30, 35, 47, 50, 82]) # 137944 satisfy this
 most_common_elements_modified = set([8, 1, 9, 16, 15, 7, 3, 12, 6, 14, 17, 26, 34, 5, 25, 13, 11, 30, 19, 29]) # 255899 satisfy this
