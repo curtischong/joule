@@ -1,16 +1,12 @@
-from ase import Atoms
 import lmdb
 import pickle
 from tqdm import tqdm
 import torch
 import os
-import numpy as np
 import time
-from ase.calculators.singlepoint import SinglePointCalculator
 import h5py
-import concurrent.futures
 from torch_geometric.data import Data
-from dataset_prep_common import generate_ranges, get_range
+from dataset_prep_common import generate_ranges
 import random
 
 IN_TRAIN_DIR = "datasets/real_mace/train"
@@ -118,7 +114,7 @@ def create_single_lmdb(dataset_path, atoms: list[any]):
             atomic_numbers=atomic_numbers,
             natoms=natoms,
             fid=torch.LongTensor([fid]),
-            fixed=torch.full((natoms,), 0, dtype=torch.int8),
+            fixed=torch.full((natoms,), 0, dtype=torch.int8), # make all the atoms fixed, so the model's prediction for each atom contributes to the loss
         )
 
         txn = db.begin(write=True)
