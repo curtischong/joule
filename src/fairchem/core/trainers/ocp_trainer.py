@@ -294,7 +294,7 @@ class OCPTrainer(BaseTrainer):
     def _compute_loss(self, out, batch, epoch):
         batch_size = batch.natoms.numel()
         fixed = batch.fixed
-        mask = fixed == 0
+        mask = fixed == 0 # if the atoms are NOT fixed (i.e. fixed == 0), then the atom's output contributes to the loss
 
         loss = []
         for loss_fn in self.loss_fns:
