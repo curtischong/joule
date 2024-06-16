@@ -100,7 +100,7 @@ def create_single_lmdb(dataset_path, atoms: list[any]):
 
     start_time = time.time()
 
-    print(f"reading {dataset_path}")
+    print(f"creating {dataset_path}")
     num_samples = len(atoms)
 
     for fid, data in tqdm(enumerate(atoms), total=num_samples):
