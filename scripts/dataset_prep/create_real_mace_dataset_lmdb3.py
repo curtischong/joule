@@ -10,7 +10,7 @@ from ase.calculators.singlepoint import SinglePointCalculator
 import h5py
 import concurrent.futures
 from torch_geometric.data import Data
-from scripts.dataset_prep.dataset_prep_common import get_range
+from dataset_prep_common import get_range
 import random
 
 IN_TRAIN_DIR = "datasets/real_mace/train"
@@ -20,7 +20,7 @@ OUT_TRAIN_DIR = "datasets/lmdb/real_mace3/train"
 OUT_VAL_DIR = "datasets/lmdb/real_mace3/val"
 OUT_TEST_DIR = "datasets/lmdb/real_mace3/test"
 
-max_rows_in_output_lmdb = 25000
+max_rows_in_output_lmdb = 50000
 
 most_common_elements_only_one_per_sample = [8, 3, 15, 12, 16, 1, 25, 7, 26, 14, 9, 6, 29, 27, 11, 23, 19, 20, 13, 17] 
 MAX_JOBS = 8
@@ -32,7 +32,8 @@ def main():
 
 
     results = parse_datasets(IN_VAL_DIR, "val", num_files=64)
-    results.extend(parse_datasets(IN_TRAIN_DIR, "train", num_files=64))
+    # results.extend(parse_datasets(IN_TRAIN_DIR, "train", num_files=64))
+    results = dedup_results(results)
     random.shuffle(results)
 
     range = get_range(len(results), dataset_type="all")
@@ -45,13 +46,40 @@ def main():
     create_lmdb(OUT_VAL_DIR, val_range, results)
     create_lmdb(OUT_TEST_DIR, test_range, results)
 
-def create_lmdb(dataset_path, range, atoms: list[any]):
-    range_start = range[0]
-    range_end = range[1]
+def dedup_results(results):
+    # filter out duplicated samples
+    # if there is a duplicated sample, NONE of them will be kept.
+    # This is because we don't know which is the correct one, so we assume both are incorrect
+
+    duplicated_results = set() # keep them in a set since more than one duplicate can exist
+    num_duplicates = 0
+    unique_results = {}
+    for i, res in enumerate(results):
+        hash = str(res["positions"]) + str(res["atomic_numbers"]) + str(res["cell"])
+        if hash in unique_results:
+            print(f"duplicate found at {i} and {unique_results[hash]}")
+            print(hash)
+            num_duplicates += 1
+            duplicated_results.add(hash)
+        else:
+            unique_results[hash] = res
+
+    for duplicate in duplicated_results:
+        del unique_results[duplicate]
+
+    print(f"found {num_duplicates} duplicates")
+    print("num previous results: ", len(results))
+    print("num cleaned results: ", len(unique_results))
+    return list(unique_results.values())
+
+
+def create_lmdb(dataset_path, dataset_range, atoms: list[any]):
+    range_start = dataset_range[0]
+    range_end = dataset_range[1]
     for i in range(range_start, range_end):
         create_single_lmdb(f"{dataset_path}/{i}", atoms[i:min(i + max_rows_in_output_lmdb, range_end)])
 
-# It's faster to read them one by one than parellelize this
+# It's faster to read them one by one than to parellelize this
 def parse_datasets(in_dir, in_dir_prefix, num_files):
     results = []
     for i in range(num_files):
@@ -126,20 +154,14 @@ def get_entries(in_dir, file_name):
             if not all([element in most_common_elements_only_one_per_sample for element in atomic_numbers]):
                 continue
 
-
-            cell = config_group['cell'][:]
-            # properties["charges"].append(config_group['charges'][:])
-            energy = config_group['energy'][()] # curtis: why is energy ()??
-            forces = config_group['forces'][:]
-            positions = config_group['positions'][:]
-
-            # I checked. positions=positions are setting the cartesian coordinates.
-            atoms = Atoms(numbers=atomic_numbers, positions=positions, cell=cell, pbc=[True, True, True])
-
-            # I verified that the energy IS the energy that includes the correction (see curtis_read_alexandria.ipynb)
-            calc = SinglePointCalculator(atoms, energy=energy, forces=forces)
-            atoms.set_calculator(calc)
-            entries.append(atoms)
+            properties = {
+                "atomic_numbers": atomic_numbers,
+                "cell":config_group['cell'][:],
+                "energy": config_group['energy'][()], # curtis: energy () since we're getting a scalar value, not a tensor
+                "forces": config_group['forces'][:],
+                "positions": config_group['positions'][:],
+            }
+            entries.append(properties)
 
     print(f"found {num_configs} systems")
     print(f"after filtering, found {len(entries)} systems")
