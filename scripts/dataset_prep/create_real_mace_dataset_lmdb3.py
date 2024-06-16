@@ -23,7 +23,6 @@ OUT_TEST_DIR = "datasets/lmdb/real_mace3/test"
 max_rows_in_output_lmdb = 50000
 
 most_common_elements_only_one_per_sample = [8, 3, 15, 12, 16, 1, 25, 7, 26, 14, 9, 6, 29, 27, 11, 23, 19, 20, 13, 17] 
-MAX_JOBS = 8
 
 
 def main():
@@ -34,8 +33,8 @@ def main():
 
     results = parse_datasets(IN_VAL_DIR, "val", num_files=64)
     results.extend(parse_datasets(IN_TRAIN_DIR, "train", num_files=64))
-    results = dedup_results(results)
-    random.shuffle(results)
+    results = remove_duplicates(results)
+    random.shuffle(results) # shuffle AFTER we remove duplicates so we can track the original index of the duplicated samples
 
     range = get_range(len(results), dataset_type="all")
     range[0] = [range[0][0] - 1, range[0][1]]
@@ -48,7 +47,7 @@ def main():
     create_lmdb(OUT_VAL_DIR, val_range, results)
     create_lmdb(OUT_TEST_DIR, test_range, results)
 
-def dedup_results(results):
+def remove_duplicates(results):
     # filter out duplicated samples
     # if there is a duplicated sample, NONE of them will be kept.
     # This is because we don't know which is the correct one, so we assume both are incorrect
@@ -60,7 +59,7 @@ def dedup_results(results):
         hash = str(res["positions"]) + str(res["atomic_numbers"]) + str(res["cell"])
         if hash in unique_results:
             print(f"duplicate found at {i} and {unique_results[hash]}")
-            print(hash)
+            # print(hash)
             num_duplicates += 1
             duplicated_results.add(hash)
         else:
