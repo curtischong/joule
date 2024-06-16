@@ -21,7 +21,7 @@ create_real_mace_dataset_lmdb:
 	python scripts/dataset_prep/create_real_mace_dataset_lmdb2.py --config-yml=$(CONFIG_YML)
 
 create_real_mace_dataset_lmdb3:
-	python scripts/dataset_prep/create_real_mace_dataset_lmdb3.py --config-yml=$(CONFIG_YML)
+	python scripts/dataset_prep/create_real_mace_dataset_lmdb3.py
 
 create_alexandria_dataset_lmdb:
 	python scripts/dataset_prep/create_alexandria_dataset_lmdb.py --config-yml=$(CONFIG_YML)

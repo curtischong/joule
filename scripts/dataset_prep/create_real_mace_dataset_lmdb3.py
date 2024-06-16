@@ -29,14 +29,16 @@ MAX_JOBS = 8
 def main():
     os.makedirs(OUT_TRAIN_DIR, exist_ok=True)
     os.makedirs(OUT_VAL_DIR, exist_ok=True)
+    os.makedirs(OUT_TEST_DIR, exist_ok=True)
 
 
     results = parse_datasets(IN_VAL_DIR, "val", num_files=64)
-    # results.extend(parse_datasets(IN_TRAIN_DIR, "train", num_files=64))
+    results.extend(parse_datasets(IN_TRAIN_DIR, "train", num_files=64))
     results = dedup_results(results)
     random.shuffle(results)
 
     range = get_range(len(results), dataset_type="all")
+    range[0] = [range[0][0] - 1, range[0][1]]
 
     train_range = range[0]
     val_range = range[1]
@@ -76,8 +78,12 @@ def dedup_results(results):
 def create_lmdb(dataset_path, dataset_range, atoms: list[any]):
     range_start = dataset_range[0]
     range_end = dataset_range[1]
-    for i in range(range_start, range_end):
-        create_single_lmdb(f"{dataset_path}/{i}", atoms[i:min(i + max_rows_in_output_lmdb, range_end)])
+    ith_loop = 0
+    while range_start < range_end:
+        current_segment_end = min(range_start + max_rows_in_output_lmdb, range_end)
+        create_single_lmdb(f"{dataset_path}/{ith_loop}", atoms[range_start:current_segment_end])
+        range_start += max_rows_in_output_lmdb
+        ith_loop += 1
 
 # It's faster to read them one by one than to parellelize this
 def parse_datasets(in_dir, in_dir_prefix, num_files):
@@ -103,9 +109,9 @@ def create_single_lmdb(dataset_path, atoms: list[any]):
     num_samples = len(atoms)
 
     for fid, data in tqdm(enumerate(atoms), total=num_samples):
-        positions = torch.Tensor(data.get_positions())
-        cell = torch.Tensor(np.array(data.get_cell())).view(1, 3, 3)
-        atomic_numbers = torch.Tensor(data.get_atomic_numbers())
+        positions = torch.Tensor(data["positions"])
+        cell = torch.Tensor(np.array(data["cell"])).view(1, 3, 3)
+        atomic_numbers = torch.Tensor(data["atomic_numbers"])
         natoms = positions.shape[0]
 
         data = Data(
