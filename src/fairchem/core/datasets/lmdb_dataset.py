@@ -152,7 +152,7 @@ class LmdbDataset(Dataset[T_co]):
         if self.key_mapping is not None:
             data_object = rename_data_object_keys(data_object, self.key_mapping)
 
-        data_object.dataset_path = self.path
+        data_object.dataset_path = str(self.path)
         data_object.data_idx = idx
 
         return self.transforms(data_object)
