@@ -7,8 +7,10 @@ from fairchem.core.common.relaxation.ase_utils import OCPCalculator
 #     build_config,
 # )
 # from fairchem.core._cli import Runner
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 # parser: argparse.ArgumentParser = flags.get_parser()
 # args, override_args = parser.parse_known_args()
@@ -22,7 +24,7 @@ calculator = OCPCalculator(
     # trainer="forces"
 )
 
-@app.route("/calculate", methods=["POST"])
+@app.route("/predict", methods=["POST"])
 def calculate():
     data = request.get_json()
     atoms = Atoms(symbols=data["atoms"], positions=data["positions"], cell=data["cell"])
