@@ -141,5 +141,14 @@
             "justMyCode": true,
             "args": [],
         },
+        {
+            "name": "launch webserver",
+            "type": "python",
+            "request": "launch",
+            "program": "server/app.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [],
+        },
     ]
 }

@@ -31,7 +31,9 @@ predict:
 
 # set the batch size so when predicting, we don't use as much memory
 run_server:
-	python server/app.py --host=0.0.0.0 --mode=predict --config-yml=$(CONFIG_YML) --checkpoint=models/last.pt --amp  --optim.eval_batch_size=1
+# python server/app.py --host=0.0.0.0 --mode=predict --config-yml=$(CONFIG_YML) --checkpoint=models/last.pt --amp  --optim.eval_batch_size=1
+	python server/app.py --host=0.0.0.0
 
 run_devserver:
-	python server/app.py --mode=predict-web --config-yml=$(CONFIG_YML) --checkpoint=models/last.pt --amp  --optim.eval_batch_size=1
+# python server/app.py --mode=predict-web --config-yml=$(CONFIG_YML) --checkpoint=models/last.pt --amp  --optim.eval_batch_size=1
+	python server/app.py

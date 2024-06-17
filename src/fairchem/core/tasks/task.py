@@ -70,21 +70,6 @@ class PredictTask(BaseTask):
             disable_tqdm=self.config.get("hide_eval_progressbar", False),
         )
 
-@registry.register_task("predict-web")
-class PredictWebTask(BaseTask):
-    def run(self) -> None:
-        assert (
-            self.trainer.test_loader is not None
-        ), "Test dataset is required for making predictions"
-        assert self.config["checkpoint"]
-        results_file = "predictions"
-        self.trainer.predict(
-            self.trainer.test_loader,
-            results_file=results_file,
-            disable_tqdm=self.config.get("hide_eval_progressbar", False),
-        )
-
-
 @registry.register_task("validate")
 class ValidateTask(BaseTask):
     def run(self) -> None:
