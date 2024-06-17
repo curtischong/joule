@@ -25,7 +25,7 @@ calculator = OCPCalculator(
 @app.route("/calculate", methods=["POST"])
 def calculate():
     data = request.get_json()
-    atoms = Atoms(symbols=data["atoms"], positions=data["positions"])
+    atoms = Atoms(symbols=data["atoms"], positions=data["positions"], cell=data["cell"])
     energy, forces = calculator.calculate(atoms, properties=["energy", "forces"])
     return {"energy": energy, "forces": forces}
 
