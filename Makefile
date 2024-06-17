@@ -28,3 +28,9 @@ create_alexandria_dataset_lmdb:
 
 predict:
 	python main.py --mode=predict --config-yml=$(CONFIG_YML) --dataset.test.src=$(LMDB_DATASET)train/1.lmdb --checkpoint=models/last.pt --amp --optim.eval_batch_size=1
+
+run_server:
+	python server/app.py --host=0.0.0.0
+
+run_devserver:
+	python server/app.py
