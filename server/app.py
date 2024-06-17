@@ -15,7 +15,7 @@ app = Flask(__name__)
 # config = build_config(args, override_args)
 # Runner()(config)
 config_yml = "configs/s2ef/all/joule/upgraded_escn.yml"
-checkpoint_path = "models/last.pt"
+checkpoint_path = "models/checkpoint_small.pt"
 calculator = OCPCalculator(
     # config_yml=config_yml,
     checkpoint_path=checkpoint_path,

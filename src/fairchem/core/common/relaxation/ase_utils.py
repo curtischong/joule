@@ -170,7 +170,7 @@ class OCPCalculator(Calculator):
         ### backwards compatability with OCP v<2.0
         ### TODO: better format check for older configs
         ### Taken from base_trainer
-        if not config.get("loss_functions"):
+        if not config.get("loss_fns"):
             logging.warning(
                 "Detected old config, converting to new format. Consider updating to avoid potential incompatibilities."
             )
@@ -187,8 +187,8 @@ class OCPCalculator(Calculator):
             model=config["model"],
             dataset=[config["dataset"]],
             outputs=config["outputs"],
-            loss_fns=config["loss_functions"],
-            eval_metrics=config.get("evaluation_metrics", {}),
+            loss_fns=config["loss_fns"],
+            eval_metrics=config.get("eval_metrics", {}),
             optimizer=config["optim"],
             identifier="",
             slurm=config.get("slurm", {}),
