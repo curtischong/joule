@@ -24,14 +24,14 @@ includes:
 
 model:
   name: upgraded_escn
-  num_layers: 12
-  # num_layers: 4
+  # num_layers: 12
+  num_layers: 4
   max_neighbors: 20
   cutoff: 8.0
-  # sphere_channels: 128
-  # hidden_channels: 256
-  sphere_channels: 160
-  hidden_channels: 384
+  sphere_channels: 128
+  hidden_channels: 256
+  # sphere_channels: 160
+  # hidden_channels: 384
   lmax_list: [3]
   mmax_list: [2]
   num_sphere_samples: 128
@@ -63,4 +63,4 @@ optim:
   energy_coefficient: 4
   clip_grad_norm: 5
   ema_decay: 0.999
-  checkpoint_every: 20000
+  checkpoint_every: 200
