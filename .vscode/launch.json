@@ -147,7 +147,7 @@
             "request": "launch",
             "program": "server/app.py",
             "console": "integratedTerminal",
-            "justMyCode": true,
+            "justMyCode": false,
             "args": [],
         },
     ]

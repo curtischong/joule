@@ -10,7 +10,7 @@ from fairchem.core.common.relaxation.ase_utils import OCPCalculator
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)
+CORS(app)  # Allow all origins
 
 # parser: argparse.ArgumentParser = flags.get_parser()
 # args, override_args = parser.parse_known_args()
@@ -27,8 +27,12 @@ calculator = OCPCalculator(
 @app.route("/predict", methods=["POST"])
 def calculate():
     data = request.get_json()
-    atoms = Atoms(symbols=data["atoms"], positions=data["positions"], cell=data["cell"])
-    energy, forces = calculator.calculate(atoms, properties=["energy", "forces"])
+    crystal = data["crystal"]
+    atoms = Atoms(symbols=crystal["atomicNumbers"], scaled_positions=crystal["fracCoords"], cell=crystal["latticeMatrix"], pbc=[True, True, True])
+    calculator.calculate(atoms, properties=["energy", "forces"], system_changes=[]) # I don't even think that system_changes is used
+    energy = calculator.results["energy"]
+    forces = calculator.results["forces"].tolist()
+    # print(energy, forces)
     return {"energy": energy, "forces": forces}
 
 @app.route("/")
