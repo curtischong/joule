@@ -104,6 +104,18 @@
             "justMyCode": true
         },
         {
+            "name": "pytest upgraded escn",
+            "type": "python",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "tests/core/models/test_uescn.py",
+                // "-k=test_not_mixing_batch_dim"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
             "name": "create mace db",
             "type": "python",
             "request": "launch",
