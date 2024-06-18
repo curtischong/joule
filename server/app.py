@@ -13,6 +13,11 @@ calculator = OCPCalculator(checkpoint_path=checkpoint_path)
 
 most_common_elements_only_one_per_sample = [8, 3, 15, 12, 16, 1, 25, 7, 26, 14, 9, 6, 29, 27, 11, 23, 19, 20, 13, 17] 
 
+def error_response(error_msg):
+    response = jsonify(errorMsg=error_msg)
+    response.status_code = 400
+    return response
+
 
 @app.route("/predict", methods=["POST"])
 def calculate():
@@ -20,16 +25,12 @@ def calculate():
     crystal = data["crystal"]
     atomic_numbers = crystal["atomicNumbers"]
 
-    # validate that we can handle this atomic number
+    # validate that we can handle each atomic number
     for atomic_number in atomic_numbers:
         if atomic_number > 118 or atomic_number < 1:
-            response = jsonify(errorMsg=f"found atomic number {atomic_number} which is not a discovered element!")
-            response.status_code = 400
-            return response
+            return error_response(f"atomic number {atomic_number} is not a valid element")
         if atomic_number not in most_common_elements_only_one_per_sample:
-            response = jsonify(errorMsg=f"the model is not trained to handle element {Element.from_Z(atomic_number)}")
-            response.status_code = 400
-            return response
+            return error_response(f"the model is not trained to handle element {Element.from_Z(atomic_number)}")
 
     atoms = Atoms(symbols=atomic_numbers, scaled_positions=crystal["fracCoords"], cell=crystal["latticeMatrix"], pbc=[True, True, True])
     calculator.calculate(atoms, properties=["energy", "forces"], system_changes=[]) # I don't even think that system_changes is used
