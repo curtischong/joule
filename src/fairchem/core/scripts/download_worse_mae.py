@@ -57,7 +57,7 @@ def tuple_to_dict(keys, tuple):
     return d
 
 def download_heap(epoch):
-    target_folder = os.path.join("datasets", "worst_mae")
+    target_folder = os.path.join("out", "worst_mae")
     os.makedirs(target_folder, exist_ok=True)
     filename = os.path.join(target_folder, f"worse_preds_epoch_{epoch}.json")
     

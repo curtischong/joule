@@ -34,11 +34,14 @@
             "args": [
                 "--mode=train",
                 "--config-yml=configs/s2ef/all/joule/upgraded_escn.yml",
-                "--dataset.train.src=datasets/lmdb/real_mace3/train/3.lmdb",
-                "--dataset.val.src=datasets/lmdb/real_mace3/val",
+                "--dataset.train.src=datasets/lmdb/real_mace3/val/0.lmdb",
+                "--dataset.val.src=datasets/lmdb/real_mace3/test",
                 "--model.max_num_elements=34",
-                "--optim.batch_size=6",
-                "--optim.eval_batch_size=6",
+                "--model.num_layers=2",
+                "--model.max_neighbors=8",
+                "--model.cutoff=6.0",
+                "--optim.batch_size=40",
+                "--optim.eval_batch_size=40",
                 "--amp",
             ],
             "env": {
