@@ -22,6 +22,10 @@ def calculate():
 
     # validate that we can handle this atomic number
     for atomic_number in atomic_numbers:
+        if atomic_number > 118 or atomic_number < 1:
+            response = jsonify(errorMsg=f"found atomic number {atomic_number} which is not a discovered element!")
+            response.status_code = 400
+            return response
         if atomic_number not in most_common_elements_only_one_per_sample:
             response = jsonify(errorMsg=f"the model is not trained to handle element {Element.from_Z(atomic_number)}")
             response.status_code = 400
