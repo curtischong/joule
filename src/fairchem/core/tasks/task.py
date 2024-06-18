@@ -70,7 +70,6 @@ class PredictTask(BaseTask):
             disable_tqdm=self.config.get("hide_eval_progressbar", False),
         )
 
-
 @registry.register_task("validate")
 class ValidateTask(BaseTask):
     def run(self) -> None:

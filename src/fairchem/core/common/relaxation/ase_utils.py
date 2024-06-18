@@ -161,7 +161,7 @@ class OCPCalculator(Calculator):
 
         # for checkpoints with relaxation datasets defined, remove to avoid
         # unnecesarily trying to load that dataset
-        if "relax_dataset" in config["task"]:
+        if "task" in config and "relax_dataset" in config["task"]:
             del config["task"]["relax_dataset"]
 
         # Calculate the edge indices on the fly
@@ -179,15 +179,16 @@ class OCPCalculator(Calculator):
         # Save config so obj can be transported over network (pkl)
         self.config = copy.deepcopy(config)
         self.config["checkpoint"] = checkpoint_path
-        del config["dataset"]["src"]
+        if "src" in config["dataset"]:
+            del config["dataset"]["src"]
 
         self.trainer = registry.get_trainer_class(config["trainer"])(
-            task=config["task"],
+            task=config.get("task", {}), # curtis: I am merely copying this line from new_trainer_context
             model=config["model"],
             dataset=[config["dataset"]],
             outputs=config["outputs"],
             loss_fns=config["loss_fns"],
-            eval_metrics=config["eval_metrics"],
+            eval_metrics=config.get("eval_metrics", {}),
             optimizer=config["optim"],
             identifier="",
             slurm=config.get("slurm", {}),
