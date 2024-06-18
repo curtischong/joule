@@ -17,7 +17,7 @@ OUT_VAL_DIR = "datasets/lmdb/real_mace3/val"
 OUT_TEST_DIR = "datasets/lmdb/real_mace3/test"
 
 max_rows_in_output_lmdb = 50000
-MAX_NUM_ATOMS = 70
+MAX_NUM_ATOMS = 50
 
 most_common_elements_only_one_per_sample = [8, 3, 15, 12, 16, 1, 25, 7, 26, 14, 9, 6, 29, 27, 11, 23, 19, 20, 13, 17] 
 
