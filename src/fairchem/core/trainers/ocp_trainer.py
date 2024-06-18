@@ -167,7 +167,7 @@ class OCPTrainer(BaseTrainer):
                     self.metrics = self.evaluator.update(f"loss_{key}", loss[key].item(), self.metrics)
 
                 time_elapsed = time.time() - start_time
-                self.metrics = self.evaluator.update(f"time_elapsed", time_elapsed, self.metrics)
+                self.metrics = self.evaluator.update(f"elapsed_seconds", time_elapsed, self.metrics)
 
                 total_loss = loss["total"]
                 total_loss = self.scaler.scale(total_loss) if self.scaler else total_loss
