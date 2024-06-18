@@ -26,6 +26,7 @@ from fairchem.core.modules.scaling.util import ensure_fitted
 from fairchem.core.trainers.base_trainer import BaseTrainer
 from fairchem.core.scripts.download_worse_mae import process_loss_values, heap_is_not_empty, download_heap, clear_heap
 from torch_scatter import scatter_mean
+import time
 
 @registry.register_trainer("ocp")
 @registry.register_trainer("energy")
@@ -130,6 +131,7 @@ class OCPTrainer(BaseTrainer):
         else:
             primary_metric = self.primary_metric
         self.metrics = {}
+        start_time = time.time() # TODO(curtis): I do not know how this will work if we have multiple GPUs
 
         # Calculate start_epoch from step instead of loading the epoch number
         # to prevent inconsistencies due to different batch size in checkpoint.
@@ -163,6 +165,9 @@ class OCPTrainer(BaseTrainer):
                 # self.metrics = self.evaluator.update("loss", loss.item(), self.metrics)
                 for key in loss:
                     self.metrics = self.evaluator.update(f"loss_{key}", loss[key].item(), self.metrics)
+
+                time_elapsed = time.time() - start_time
+                self.metrics = self.evaluator.update(f"time_elapsed", time_elapsed, self.metrics)
 
                 total_loss = loss["total"]
                 total_loss = self.scaler.scale(total_loss) if self.scaler else total_loss

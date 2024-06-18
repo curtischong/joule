@@ -66,7 +66,7 @@ def load_model(request):
     model.num_layers = 1
     request.cls.model = model # here we are passing model in as a class-level fixture
 
-class TestMace:
+class TestUescn:
     @pytest.mark.usefixtures("load_data")
     @pytest.mark.usefixtures("load_model")
     def test_not_mixing_batch_dim(self):
