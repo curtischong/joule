@@ -61,8 +61,8 @@ def download_heap(epoch):
     os.makedirs(target_folder, exist_ok=True)
     filename = os.path.join(target_folder, f"worse_preds_epoch_{epoch}.json")
     
-    energy_keys = ["energy_loss", "pred_energy", "dataset_path", "data_idx"]
-    force_keys = ["forces_loss", "pred_forces", "dataset_path", "data_idx"]
+    energy_keys = ["loss", "pred_energy", "dataset_path", "data_idx"]
+    force_keys = ["loss", "pred_forces", "dataset_path", "data_idx"]
 
     energy_heap_as_dict = [tuple_to_dict(energy_keys, entry) for entry in energy_heap ]
     force_heap_as_dict = [tuple_to_dict(force_keys, entry) for entry in force_heap ]
