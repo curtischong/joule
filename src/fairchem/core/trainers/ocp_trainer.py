@@ -456,6 +456,11 @@ class OCPTrainer(BaseTrainer):
 
         predictions = defaultdict(list)
 
+        sample_batch = next(iter(data_loader))
+        if "sid" not in sample_batch:
+            print("WARNING: missing sid in batch. setting it to 0. This only works if you're using one GPU")
+            # note: the place we actually set it is below. but I put this print statement here to not spam the logs
+
         for _i, batch in tqdm(
             enumerate(data_loader),
             total=len(data_loader),
