@@ -13,7 +13,7 @@ train1000:
 # trainall is for an 80GB A100
 # 34 is the largest atomic number of the set of 20 most common elements
 trainall:
-	export NUMEXPR_MAX_THREADS=24 && python main.py --mode=train --config-yml=$(CONFIG_YML) --dataset.train.src=$(LMDB_DATASET)train --dataset.val.src=$(LMDB_DATASET)val --model.max_num_elements=34 --optim.num_workers=8 --optim.batch_size=30 --optim.eval_batch_size=30 --amp
+	export NUMEXPR_MAX_THREADS=24 && python main.py --mode=train --config-yml=$(CONFIG_YML) --dataset.train.src=$(LMDB_DATASET)train --dataset.val.src=$(LMDB_DATASET)val --model.max_num_elements=34 --optim.num_workers=8 --model.max_neighbors=12 --model.cutoff=7.0 --optim.batch_size=60 --optim.eval_batch_size=60 --amp
 
 trainallsmall:
 	export NUMEXPR_MAX_THREADS=24 && python main.py --mode=train --config-yml=$(CONFIG_YML) --dataset.train.src=$(LMDB_DATASET)val/0.lmdb --dataset.val.src=$(LMDB_DATASET)test/0.lmdb --model.max_num_elements=34 --model.num_layers=2 --model.max_neighbors=8 --model.cutoff=6.0 --optim.batch_size=40 --optim.eval_batch_size=40 --amp

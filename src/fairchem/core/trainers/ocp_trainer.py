@@ -347,7 +347,7 @@ class OCPTrainer(BaseTrainer):
         pred_energies = out["energy"].squeeze()
         pred_forces = out["forces"]
 
-        if epoch % 2 == 0:
+        if epoch != -1 and epoch % 2 == 0: # -1 means we're calling this during validation
             process_loss_values(energy_losses=energy_losses,
                                 forces_losses=forces_loss,
                                 pred_energies=pred_energies,

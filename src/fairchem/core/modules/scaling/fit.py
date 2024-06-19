@@ -33,7 +33,7 @@ def _train_batch(trainer: BaseTrainer, batch) -> None:
     with torch.no_grad():
         with torch.cuda.amp.autocast(enabled=trainer.scaler is not None):
             out = trainer._forward(batch)
-        loss = trainer._compute_loss(out, batch)
+        loss = trainer._compute_loss(out, batch, -1)
         del out, loss
 
 

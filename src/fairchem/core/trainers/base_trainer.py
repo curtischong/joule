@@ -725,11 +725,13 @@ class BaseTrainer(ABC):
             with torch.cuda.amp.autocast(enabled=self.scaler is not None):
                 batch.to(self.device)
                 out = self._forward(batch)
-            loss = self._compute_loss(out, batch)
+            loss = self._compute_loss(out, batch, -1)
 
             # Compute metrics.
             metrics = self._compute_metrics(out, batch, evaluator, metrics)
-            metrics = evaluator.update("loss", loss.item(), metrics)
+            for key in loss:
+                # metrics = evaluator.update("loss", loss.item(), metrics)
+                self.metrics = self.evaluator.update(f"loss_{key}", loss[key].item(), self.metrics)
 
         aggregated_metrics = {}
         for k in metrics:
