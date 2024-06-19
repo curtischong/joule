@@ -725,7 +725,7 @@ class BaseTrainer(ABC):
             with torch.cuda.amp.autocast(enabled=self.scaler is not None):
                 batch.to(self.device)
                 out = self._forward(batch)
-            loss = self._compute_loss(out, batch)
+            loss = self._compute_loss(out, batch, -1)
 
             # Compute metrics.
             metrics = self._compute_metrics(out, batch, evaluator, metrics)

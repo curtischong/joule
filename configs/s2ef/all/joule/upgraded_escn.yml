@@ -49,7 +49,7 @@ optim:
   lr_initial: 0.0002
   optimizer: AdamW
   optimizer_params: {"amsgrad": True}
-  eval_every: 2000
+  eval_every: 500
   lr_gamma: 0.3
   lr_milestones: # epochs at which lr_initial <- lr_initial * lr_gamma
     - 218750
