@@ -37,3 +37,6 @@ run_server:
 
 run_devserver:
 	python server/app.py
+
+testset:
+	NUMEXPR_MAX_THREADS=24 && python main.py --mode=predict --config-yml=$(CONFIG_YML) --dataset.test.src=$(LMDB_DATASET)test --model.max_num_elements=34 --optim.num_workers=8 --model.max_neighbors=20 --model.cutoff=6.0 --checkpoint=models/large-run.pt --optim.eval_batch_size=50 --amp 
