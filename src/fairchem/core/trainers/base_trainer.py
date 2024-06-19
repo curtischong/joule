@@ -729,7 +729,9 @@ class BaseTrainer(ABC):
 
             # Compute metrics.
             metrics = self._compute_metrics(out, batch, evaluator, metrics)
-            metrics = evaluator.update("loss", loss.item(), metrics)
+            for key in loss:
+                # metrics = evaluator.update("loss", loss.item(), metrics)
+                self.metrics = self.evaluator.update(f"loss_{key}", loss[key].item(), self.metrics)
 
         aggregated_metrics = {}
         for k in metrics:
