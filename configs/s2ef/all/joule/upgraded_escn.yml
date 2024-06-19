@@ -24,9 +24,9 @@ includes:
 
 model:
   name: upgraded_escn
-  num_layers: 8
+  num_layers: 6
   max_neighbors: 20
-  cutoff: 8.0
+  cutoff: 6.0
   sphere_channels: 128
   hidden_channels: 256
   # sphere_channels: 160
@@ -56,8 +56,8 @@ optim:
     - 343750
   warmup_steps: 100
   warmup_factor: 0.2
-  # max_epochs: 24
-  max_epochs: 2400000
+  max_epochs: 64
+  # max_epochs: 2400000
   force_coefficient: 100
   energy_coefficient: 4
   clip_grad_norm: 5
