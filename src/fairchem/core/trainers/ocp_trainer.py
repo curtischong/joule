@@ -523,22 +523,23 @@ class OCPTrainer(BaseTrainer):
             if not per_image:
                 return predictions
 
-            ### Get unique system identifiers
-            sids = (
-                batch.sid.tolist() if isinstance(batch.sid, torch.Tensor) else batch.sid
-            )
-            ## Support naming structure for OC20 S2EF
-            if "fid" in batch:
-                fids = (
-                    batch.fid.tolist()
-                    if isinstance(batch.fid, torch.Tensor)
-                    else batch.fid
-                )
-                systemids = [f"{sid}_{fid}" for sid, fid in zip(sids, fids)]
-            else:
-                systemids = [f"{sid}" for sid in sids]
+            # system IDs were all 0 in the example of how to add to LMDB
+            # ### Get unique system identifiers
+            # sids = (
+            #     batch.sid.tolist() if isinstance(batch.sid, torch.Tensor) else batch.sid
+            # )
+            # ## Support naming structure for OC20 S2EF
+            # if "fid" in batch:
+            #     fids = (
+            #         batch.fid.tolist()
+            #         if isinstance(batch.fid, torch.Tensor)
+            #         else batch.fid
+            #     )
+            #     systemids = [f"{sid}_{fid}" for sid, fid in zip(sids, fids)]
+            # else:
+            #     systemids = [f"{sid}" for sid in sids]
 
-            predictions["ids"].extend(systemids)
+            # predictions["ids"].extend(systemids)
 
         self.save_results(predictions, results_file)
 
