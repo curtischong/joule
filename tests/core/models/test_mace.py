@@ -95,17 +95,20 @@ class TestMace:
 
         # Sampling a random rotation within [-180, 180] for all axes.
         transform = RandomRotate([-180, 180], [0, 1, 2])
+
+        # 1) rotate the data randomly
         data_rotated, rot, inv_rot = transform(data.clone())
         assert not np.array_equal(data.pos, data_rotated.pos)
 
-        # Pass it through the model.
+        # 2) Pass it through the model.
         batch = data_list_collater([data, data_rotated])
         out = self.model(batch)
 
-        # Compare predicted energies and forces (after inv-rotation).
-        energies = out["energy"].detach().numpy() # convert to numpy, so more deciomals points are printed during a mismatch
+        # 3) verify that the energies are the same even after the rotation
+        energies = out["energy"].detach().numpy() # convert to numpy, so more decimal points are printed during a mismatch
         np.testing.assert_almost_equal(energies[0], energies[1], decimal=5)
 
+        # 4) verify that the forces on each atom are rotated the same way (after inv-rotation)
         forces = out["forces"].detach()
         logging.info(forces)
         np.testing.assert_array_almost_equal(
