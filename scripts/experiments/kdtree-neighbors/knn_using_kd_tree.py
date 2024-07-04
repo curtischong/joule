@@ -1,68 +1,51 @@
 import numpy as np
 import torch
-from scipy.spatial import cKDTree
+import faiss
 
 class KNNUsingKDTree:
-    def __init__(self, k=12, self_interaction=False):
+    def __init__(self, k, cutoff_radius=1.0):
         self.k = k
-        self.self_interaction = self_interaction
+        self.cutoff_radius = cutoff_radius
 
-    def __call__(self, frac_coords, lattice_matrix):
+    def knn_using_kd_tree(self, frac_coords, lattice_matrix):
         # Convert fractional coordinates to Cartesian coordinates
         cart_coords = np.dot(frac_coords, lattice_matrix)
 
-        # Create periodic images
-        images = np.array([[0, 0, 0], 
-                           [1, 0, 0], [-1, 0, 0], 
-                           [0, 1, 0], [0, -1, 0],
-                           [0, 0, 1], [0, 0, -1],
-                           [1, 1, 0], [1, -1, 0], [-1, 1, 0], [-1, -1, 0],
-                           [1, 0, 1], [1, 0, -1], [-1, 0, 1], [-1, 0, -1],
-                           [0, 1, 1], [0, 1, -1], [0, -1, 1], [0, -1, -1],
-                           [1, 1, 1], [1, 1, -1], [1, -1, 1], [-1, 1, 1],
-                           [-1, -1, -1], [-1, -1, 1], [-1, 1, -1], [1, -1, -1]])
+        # Create and add vectors to the index
+        index = faiss.IndexFlatL2(3)  # 3D space
+        index = faiss.index_cpu_to_all_gpus(index)
+        index.add(cart_coords.astype(np.float32))
 
-        # Create extended structure
-        extended_cart_coords = np.concatenate([cart_coords + np.dot(image, lattice_matrix) for image in images])
-        extended_indices = np.concatenate([np.arange(len(cart_coords)) for _ in range(len(images))])
-
-        # Create KD-tree
-        tree = cKDTree(extended_cart_coords)
-
-        # Query KD-tree for k nearest neighbors
-        distances, indices = tree.query(cart_coords, k=self.k + 1)
-
-        # Remove self-interactions if not desired
-        if not self.self_interaction:
-            distances = distances[:, 1:]
-            indices = indices[:, 1:]
-        else:
-            distances = distances[:, :self.k]
-            indices = indices[:, :self.k]
-
-        # Map indices back to original structure
-        indices = extended_indices[indices]
+        # Perform KNN search
+        distances, indices = index.search(cart_coords.astype(np.float32), self.k)
 
         # Create edge_index
-        row = np.repeat(np.arange(len(frac_coords)), self.k)
+        row = np.repeat(np.arange(indices.shape[0]), indices.shape[1])
         col = indices.flatten()
-        edge_index = np.stack([row, col])
 
-        # Calculate edge_distance and edge_distance_vec
+        # Create edge_distance
         edge_distance = distances.flatten()
-        edge_distance_vec = extended_cart_coords[indices.flatten()] - np.repeat(cart_coords, self.k, axis=0)
 
-        # Apply minimum image convention
-        for i in range(3):
-            edge_distance_vec[:, i] = (edge_distance_vec[:, i] + lattice_matrix[i, i] / 2) % lattice_matrix[i, i] - lattice_matrix[i, i] / 2
+        # Filter for all edges with distance < cutoff_radius
+        # since the number of nearest neighbors (k) is small, masking is fast
+        mask = edge_distance < self.cutoff_radius**2  # squared distance
+        row = row[mask]
+        col = col[mask]
+        edge_distance = edge_distance[mask]
 
-        # Convert to PyTorch tensors
-        edge_index = torch.tensor(edge_index, dtype=torch.long)
-        edge_distance = torch.tensor(edge_distance, dtype=torch.float)
-        edge_distance_vec = torch.tensor(edge_distance_vec, dtype=torch.float)
+        # Create edge_index tensor
+        edge_index = torch.tensor(np.array([row, col]), dtype=torch.long)
+
+        # Create edge_distance tensor
+        edge_distance = torch.tensor(np.sqrt(edge_distance), dtype=torch.float)  # convert back to actual distance
+
+        # Create edge_distance_vec
+        source_coords = cart_coords[row]
+        target_coords = cart_coords[col]
+        edge_distance_vec = torch.tensor(target_coords - source_coords, dtype=torch.float)
 
         return edge_index, edge_distance, edge_distance_vec
 
-def knn_using_kd_tree(frac_coords, lattice_matrix):
-    knn = KNNUsingKDTree()
-    return knn(frac_coords, lattice_matrix)
+# Usage example:
+# knn = KNNUsingKDTree(k=12, cutoff_radius=1.0)
+# edge_index, edge_distance, edge_distance_vec = knn.knn_using_kd_tree(frac_coords, lattice_matrix)
