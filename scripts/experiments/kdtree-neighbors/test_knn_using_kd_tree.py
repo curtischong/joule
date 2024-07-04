@@ -5,9 +5,11 @@ from knn_using_kd_tree import KNNUsingKDTree
 
 class TestKNNUsingKDTree(unittest.TestCase):
     def setUp(self):
-        self.knn = KNNUsingKDTree(k=4, self_interaction=False)
+        self.knn = KNNUsingKDTree(k=6, self_interaction=False)
 
     def test_simple_cubic(self):
+        # the radius is 1.9 so we never go more than one lattice over
+        knn = KNNUsingKDTree(k=6, cutoff_radius=1.9, self_interaction=False)
         frac_coords = np.array([
             [0, 0, 0],
             [0.5, 0.5, 0.5]
@@ -18,15 +20,17 @@ class TestKNNUsingKDTree(unittest.TestCase):
             [0, 0, 100.0] # this vector is really long so the problem is in 2D
         ])
 
-        edge_index, edge_distance, edge_distance_vec = self.knn(frac_coords, lattice_matrix)
+        edge_index, edge_distance, edge_distance_vec = knn(frac_coords, lattice_matrix)
 
-        self.assertEqual(edge_index.shape, (2, 8))
-        self.assertEqual(edge_distance.shape, (8,))
-        self.assertEqual(edge_distance_vec.shape, (8, 3))
+        self.assertEqual(edge_index.shape, (2, 12))
+        self.assertEqual(edge_distance.shape, (12,))
+        self.assertEqual(edge_distance_vec.shape, (12, 3))
+        
+        self.assertTrue(edge_index, np.array([
+            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+            [1, 2, 3, 4, 5, 6, 7, 8, 9, 0]
+        ]))
 
-        expected_distance = 2.0 * np.sqrt(3)
-        print("Expected distance:", expected_distance)
-        print("Actual distances:", edge_distance.numpy())
         self.assertTrue(np.allclose(edge_distance.numpy(), expected_distance, atol=1e-6))
 
         print("Actual vectors:")

@@ -187,5 +187,17 @@
             "justMyCode": false,
             "args": [],
         },
+        {
+            "name": "pytest knn",
+            "type": "python",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "scripts/experiments/kdtree-neighbors/test_knn_using_kd_tree.py",
+                // "-k=test_simple_cubic"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
     ]
 }
