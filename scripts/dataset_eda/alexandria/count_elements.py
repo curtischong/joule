@@ -20,7 +20,7 @@ def get_entries(element_cnt, file_path):
                 element_cnt.update(entry["data"]["elements"])
             else:
                 for site in entry["structure"]["sites"]:
-                    element_cnt.update(site["label"])
+                    element_cnt[site["label"]] += 1
 
 def main():
     element_cnt = Counter()
@@ -137,48 +137,92 @@ Ar: 0.000078%, count: 1
 """
 when we set only_count_unique_atom_types_per_sample = False
 
-total number of entries:  5649630
-O: 8.915858%, count: 503713
-S: 6.867193%, count: 387971
-C: 6.177378%, count: 348999
-e: 4.829785%, count: 272865
-i: 4.435264%, count: 250576
-a: 4.298228%, count: 242834
-r: 3.923089%, count: 221640
-P: 3.815719%, count: 215574
-A: 3.733643%, count: 210937
-T: 3.672471%, count: 207481
-N: 3.304446%, count: 186689
-B: 3.186102%, count: 180003
-n: 3.142931%, count: 177564
-l: 3.110540%, count: 175734
-u: 2.800590%, count: 158223
-H: 2.610259%, count: 147470
-b: 2.523422%, count: 142564
-g: 2.347163%, count: 132606
-R: 2.264980%, count: 127963
-F: 2.229226%, count: 125943
-M: 2.186763%, count: 123544
-I: 2.175806%, count: 122925
-L: 2.117926%, count: 119655
-d: 1.739371%, count: 98268
-o: 1.728538%, count: 97656
-G: 1.713723%, count: 96819
-s: 1.612123%, count: 91079
-Z: 1.577838%, count: 89142
-c: 1.054494%, count: 59575
-h: 0.996278%, count: 56286
-t: 0.859791%, count: 48575
-K: 0.762705%, count: 43090
-Y: 0.700683%, count: 39586
-m: 0.503626%, count: 28453
-W: 0.436046%, count: 24635
-E: 0.382450%, count: 21607
-f: 0.338766%, count: 19139
-D: 0.263026%, count: 14860
-y: 0.263026%, count: 14860
-V: 0.239768%, count: 13546
-U: 0.096626%, count: 5459
-p: 0.062199%, count: 3514
-X: 0.000142%, count: 8
+total number of entries:  3357619
+O: 14.257812%, count: 478723
+F: 2.450665%, count: 82284
+H: 2.372753%, count: 79668
+Al: 2.340260%, count: 78577
+S: 2.331265%, count: 78275
+P: 2.119002%, count: 71148
+Se: 2.116768%, count: 71073
+Li: 2.038498%, count: 68445
+Si: 1.929760%, count: 64794
+Ni: 1.911503%, count: 64181
+Cl: 1.812296%, count: 60850
+Cu: 1.743587%, count: 58543
+Mg: 1.618290%, count: 54336
+Co: 1.597680%, count: 53644
+Te: 1.577368%, count: 52962
+Zn: 1.522478%, count: 51119
+In: 1.494601%, count: 50183
+Pt: 1.446710%, count: 48575
+N: 1.443046%, count: 48452
+Rh: 1.402601%, count: 47094
+Br: 1.362990%, count: 45764
+Ga: 1.350362%, count: 45340
+Ca: 1.331152%, count: 44695
+As: 1.328412%, count: 44603
+Sb: 1.326178%, count: 44528
+Ge: 1.319149%, count: 44292
+Ag: 1.305419%, count: 43831
+Ba: 1.305032%, count: 43818
+Fe: 1.300296%, count: 43659
+K: 1.283320%, count: 43089
+Au: 1.277334%, count: 42888
+Sr: 1.232540%, count: 41384
+Cd: 1.223843%, count: 41092
+La: 1.214879%, count: 40791
+Y: 1.178990%, count: 39586
+Ir: 1.176399%, count: 39499
+B: 1.175238%, count: 39460
+Mn: 1.174046%, count: 39420
+Zr: 1.132439%, count: 38023
+Sc: 1.119484%, count: 37588
+Sn: 1.097266%, count: 36842
+Pb: 1.083982%, count: 36396
+Tl: 1.081332%, count: 36307
+Pd: 1.047320%, count: 35165
+Na: 1.033113%, count: 34688
+Hg: 1.025697%, count: 34439
+I: 0.990077%, count: 33243
+Ru: 0.986741%, count: 33131
+Ta: 0.919640%, count: 30878
+Mo: 0.887176%, count: 29788
+Ti: 0.841638%, count: 28259
+Cr: 0.841400%, count: 28251
+C: 0.835116%, count: 28040
+Be: 0.776264%, count: 26064
+Rb: 0.754404%, count: 25330
+Os: 0.744277%, count: 24990
+Bi: 0.741508%, count: 24897
+W: 0.733704%, count: 24635
+Re: 0.667378%, count: 22408
+Cs: 0.639918%, count: 21486
+Nb: 0.626307%, count: 21029
+Tc: 0.623954%, count: 20950
+Hf: 0.570017%, count: 19139
+Tb: 0.455114%, count: 15281
+Dy: 0.442576%, count: 14860
+Nd: 0.441503%, count: 14824
+Pr: 0.428220%, count: 14378
+Er: 0.427059%, count: 14339
+Ho: 0.423634%, count: 14224
+Tm: 0.406598%, count: 13652
+V: 0.403441%, count: 13546
+Sm: 0.401683%, count: 13487
+Ce: 0.369250%, count: 12398
+Lu: 0.310309%, count: 10419
+Th: 0.273765%, count: 9192
+Eu: 0.216463%, count: 7268
+Gd: 0.214050%, count: 7187
+Pu: 0.177924%, count: 5974
+U: 0.162585%, count: 5459
+Np: 0.104657%, count: 3514
+Pa: 0.078151%, count: 2624
+Pm: 0.039135%, count: 1314
+Ac: 0.030885%, count: 1037
+Xe: 0.000238%, count: 8
+Ne: 0.000030%, count: 1
+Kr: 0.000030%, count: 1
+Ar: 0.000030%, count: 1
 """
