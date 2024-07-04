@@ -7,7 +7,7 @@ class KNNUsingKDTree:
         self.k = k
         self.cutoff_radius = cutoff_radius
 
-    def knn_using_kd_tree(self, frac_coords, lattice_matrix):
+    def create_graph(self, frac_coords, lattice_matrix):
         # Convert fractional coordinates to Cartesian coordinates
         cart_coords = np.dot(frac_coords, lattice_matrix)
 
@@ -16,7 +16,7 @@ class KNNUsingKDTree:
 
         # Create and add vectors to the index
         index = faiss.IndexFlatL2(3)  # 3D space
-        index = faiss.index_cpu_to_all_gpus(index)
+        # index = faiss.index_cpu_to_all_gpus(index) # TODO(curtis): enable this when running on a cluster
         index.add(extended_coords.astype(np.float32))
 
         # Perform KNN search

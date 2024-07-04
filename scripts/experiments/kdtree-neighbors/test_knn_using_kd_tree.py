@@ -5,11 +5,11 @@ from knn_using_kd_tree import KNNUsingKDTree
 
 class TestKNNUsingKDTree(unittest.TestCase):
     def setUp(self):
-        self.knn = KNNUsingKDTree(k=6, self_interaction=False)
+        self.knn = KNNUsingKDTree(k=6, cutoff_radius=1.9)
 
     def test_simple_cubic(self):
         # the radius is 1.9 so we never go more than one lattice over
-        knn = KNNUsingKDTree(k=6, cutoff_radius=1.9, self_interaction=False)
+        knn = KNNUsingKDTree(k=6, cutoff_radius=1.9)
         frac_coords = np.array([
             [0, 0, 0],
             [0.5, 0.5, 0.5]
@@ -20,7 +20,7 @@ class TestKNNUsingKDTree(unittest.TestCase):
             [0, 0, 100.0] # this vector is really long so the problem is in 2D
         ])
 
-        edge_index, edge_distance, edge_distance_vec = knn(frac_coords, lattice_matrix)
+        edge_index, edge_distance, edge_distance_vec = knn.create_graph(frac_coords, lattice_matrix)
 
         self.assertEqual(edge_index.shape, (2, 12))
         self.assertEqual(edge_distance.shape, (12,))
