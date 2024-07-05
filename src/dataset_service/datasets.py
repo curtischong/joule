@@ -45,7 +45,7 @@ class AlexandriaDataset(DatasetDef):
                             db.close()
 
                         ith_db = ith_total_entry // max_entries_per_db
-                        db = self._open_db(lmdb_output_dir, ith_db)
+                        db = self._open_write_db(lmdb_output_dir, ith_db)
 
                     entry = data["entries"][idx_in_file]
                     self._parse_entry_and_save(db, entry, idx_in_db)
@@ -54,15 +54,6 @@ class AlexandriaDataset(DatasetDef):
 
         db.sync()
         db.close()
-
-    def _open_db(self, lmdb_output_dir: str, ith_db: int = 0):
-        return lmdb.open(
-            f"{lmdb_output_dir}/{ith_db}.lmdb", # TODO out dir
-            map_size=1099511627776 * 2, # two terabytes is the max size of the db
-            subdir=False,
-            meminit=False,
-            map_async=True,
-        )
 
     def _parse_entry_and_save(self, db: lmdb.Environment, entry: any, idx_in_db: int):
         structure = entry["structure"]
