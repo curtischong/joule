@@ -46,7 +46,6 @@ class DataDefField:
 
 class DataDef:
     def __init__(self, *, num_atoms: int, fields: list[DataDefField]):
-        # self.num_atoms = num_atoms
         self.fields = fields
 
         self.packed_data = b""
