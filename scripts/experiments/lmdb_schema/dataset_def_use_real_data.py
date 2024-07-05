@@ -1,3 +1,4 @@
+from collections import Counter
 import json
 import numpy as np
 from torch_geometric.data import Data
@@ -8,6 +9,8 @@ import zlib
 import lzma
 import bz2
 import time
+
+from tqdm import tqdm
 from run_length_encoding import encode_to_rle_bytes
 from pymatgen.entries.computed_entries import ComputedStructureEntry
 
@@ -75,21 +78,7 @@ class DataDef:
             case DataShape.MATRIX_nx3:
                 return np.dtype(field.dtype).itemsize * self.num_atoms * 3
 
-
-
-def main():
-    # NOTE: float64 is needed for the lattice. float32 is not enough.
-    # This number cannot fit in a float32 so we need to use float64.
-    # value = np.float32(6.23096541)
-    # print(value)
-
-    IN_DIR = "../../../datasets/alexandria"
-    filename = "alexandria_ps_004"
-    with bz2.open(f"{IN_DIR}/{filename}.json.bz2", "rt", encoding="utf-8") as fh:
-        data = json.load(fh)
-
-    ith_sample = 9
-    print(f"ith_sample: {ith_sample}")
+def compress_and_read_entry(data: any, counter: Counter, ith_sample: int):
     entry = ComputedStructureEntry.from_dict(data["entries"][ith_sample])
 
     structure = entry.structure
@@ -102,45 +91,61 @@ def main():
     # print(f"frac_coords: {frac_coords}")
     # print(f"Energy: {energy}")
 
-
     datadef = DataDef(
         num_atoms=len(atomic_numbers),
         fields=[
-        DataDefField("lattice", lattice, np.float64, DataShape.MATRIX_3x3),
-        DataDefField("frac_coords", frac_coords, np.float64, DataShape.MATRIX_nx3),
-        DataDefField("atomic_numbers", atomic_numbers, np.uint8, DataShape.VECTOR), # range is: [0, 255]
-        DataDefField("energy", energy, np.float64, DataShape.SCALAR),
-    ])
+            # NOTE: float64 is needed for the lattice. float32 is not enough.
+            # e.g. This number cannot fit in a float32 so we need to use float64.
+            # value = np.float32(6.23096541)
+            # print(value)
+            DataDefField("lattice", lattice, np.float64, DataShape.MATRIX_3x3),
+            DataDefField("frac_coords", frac_coords, np.float64, DataShape.MATRIX_nx3),
+            DataDefField("atomic_numbers", atomic_numbers, np.uint8, DataShape.VECTOR), # range is: [0, 255]
+            DataDefField("energy", energy, np.float64, DataShape.SCALAR),
+        ])
 
     packed_data = datadef.to_bytes()
 
     time_start = time.time()
 
-    # print(f"Packed Data (len={len(packed_data)}): {packed_data}")
-    # print(f"brotli compressed (len={len(brotli.compress(packed_data))}): {brotli.compress(packed_data)}")
-    # print(f"zlib compressed (len={len(zlib.compress(packed_data))}): {zlib.compress(packed_data)}")
-    # print(f"pylzma compressed (len={len(lzma.compress(packed_data))}): {lzma.compress(packed_data)}")
-    # print(f"bz2 compressed (len={len(bz2.compress(packed_data))}): {bz2.compress(packed_data)}")
-    # print(f"rle compressed (len={len(encode_to_rle_bytes(packed_data))}): {encode_to_rle_bytes(packed_data)}")
+    brotli_compressed = brotli.compress(packed_data)
+    zlib_compressed = zlib.compress(packed_data)
+    pylzma_compressed = lzma.compress(packed_data)
+    bz2_compressed = bz2.compress(packed_data)
+    rle_compressed = encode_to_rle_bytes(packed_data)
+    counter["brotli"] += len(brotli_compressed)
+    counter["zlib"] += len(zlib_compressed)
+    counter["pylzma"] += len(pylzma_compressed)
+    counter["bz2"] += len(bz2_compressed)
+    counter["rle"] += len(rle_compressed)
+    # print(f"brotli compressed (len={len(brotli_compressed)})")
+    # print(f"zlib compressed (len={len(zlib_compressed)})")
+    # print(f"pylzma compressed (len={len(pylzma_compressed)})")
+    # print(f"bz2 compressed (len={len(bz2_compressed)})")
+    # print(f"rle compressed (len={len(rle_compressed)})")
 
-    print(f"brotli compressed (len={len(brotli.compress(packed_data))})")
-    print(f"zlib compressed (len={len(zlib.compress(packed_data))})")
-    print(f"pylzma compressed (len={len(lzma.compress(packed_data))})")
-    print(f"bz2 compressed (len={len(bz2.compress(packed_data))})")
-    print(f"rle compressed (len={len(encode_to_rle_bytes(packed_data))})")
-
-    print(f"Time taken: {time.time() - time_start}")
+    # print(f"time took to compress: {time.time() - time_start}")
 
 
     parsed_data = datadef.from_bytes(packed_data)
-    # for key, value in parsed_data.items():
-    #     print(key, value)
-    # print(parsed_data["energy"])
-
     assert np.array_equal(lattice, parsed_data["lattice"])
     assert np.array_equal(frac_coords, parsed_data["frac_coords"])
     assert energy == parsed_data["energy"]
     assert np.array_equal(atomic_numbers, parsed_data["atomic_numbers"])
+
+def main():
+    IN_DIR = "../../../datasets/alexandria"
+    filename = "alexandria_ps_004"
+    with bz2.open(f"{IN_DIR}/{filename}.json.bz2", "rt", encoding="utf-8") as fh:
+        data = json.load(fh)
+
+    # compress_and_read_entry(data, 1)
+    c = Counter()
+    for i in tqdm(range(len(data["entries"]))):
+        compress_and_read_entry(data, c, i)
+    print(f"num_entries: {len(data['entries'])}")
+    for k, v in c.items():
+        print(f"{k}: {v}")
 
 if __name__ == "__main__":
     main()
