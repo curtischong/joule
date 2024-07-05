@@ -72,7 +72,9 @@ class DatasetDef(ABC):
         ptr = np.dtype(np.uint16).itemsize
         for field in self.fields:
             data_len = self._data_len(field, num_atoms)
-            res[field.name] = np.frombuffer(packed_data[ptr: ptr + data_len], dtype=field.dtype).reshape(field.data_shape.to_np_shape(num_atoms))
+            compressed_data = packed_data[ptr: ptr + data_len]
+            uncompressed_data = zlib.decompress(compressed_data)
+            res[field.name] = np.frombuffer(uncompressed_data, dtype=field.dtype).reshape(field.data_shape.to_np_shape(num_atoms))
             ptr += data_len
         return res
     

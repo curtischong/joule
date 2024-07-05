@@ -33,7 +33,7 @@ class AlexandriaDataset(DatasetDef):
             meminit=False,
             map_async=True,
         )
-        file_paths = glob.glob(f"{dataset_dir}/*.json.bz2")[4:]
+        file_paths = sorted(glob.glob(f"{dataset_dir}/*.json.bz2"))[4:]
         assert len(file_paths) > 0, f"No files found in {dataset_dir}"
 
         for filepath in file_paths:
