@@ -59,11 +59,13 @@ class DatasetDef(ABC):
     def _bytes_to_int(self, b: bytes):
         return int.from_bytes(b, 'big')
 
-    def _pack_data(self, db: Environment, data: dict[FieldName, FieldDef], data_idx: int):
+    def _pack_data(self, db: Environment, entry_data: dict[FieldName, np.ndarray], data_idx: int, num_atoms: int):
         packed_data = b""
-        packed_data += np.uint16(data.num_nodes).tobytes() # use an unsigned short with range [0, 65535]
+        packed_data += np.uint16(num_atoms).tobytes() # use an unsigned short with range [0, 65535]
+
+        # np_data 
         for field in self.fields:
-            packed_data += field.data_bytes
+            packed_data += entry_data[field.name].tobytes()
 
         compressed = zlib.compress(packed_data) # we are using zlib since our experiemnt in scripts/experiments/lmdb_schema/dataset_def_use_real_data.py had the best results
 

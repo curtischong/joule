@@ -39,13 +39,13 @@ class AlexandriaDataset(DatasetDef):
                     entry = data["entries"][i]
                     structure = entry["structure"]
 
-                    lattice = structure["lattice"]["matrix"]
-                    atomic_numbers = [Element(site["label"]).Z for site in structure["sites"]]
-                    frac_coords = [site["abc"] for site in structure["sites"]]
-                    energy = entry["energy"]
-
-
-
+                    entry_data = {
+                        "lattice": structure["lattice"]["matrix"],
+                        "atomic_numbers": [Element(site["label"]).Z for site in structure["sites"]],
+                        "frac_coords": [site["abc"] for site in structure["sites"]],
+                        "energy": entry["energy"],
+                    }
+                    self._pack_data(db, entry_data, i, len(structure["sites"]))
 
         db.sync()
         db.close()
