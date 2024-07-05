@@ -43,7 +43,7 @@ class DatasetDef(ABC):
         return self._from_bytes(compressed)
 
     @abstractmethod
-    def raw_data_to_lmdb(self, dataset_dir: str):
+    def raw_data_to_lmdb(self, raw_dataset_input_dir: str, lmdb_output_dir: str):
         # please use tqdm to track progress
         pass
 

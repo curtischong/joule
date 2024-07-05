@@ -1,11 +1,11 @@
-# used when reading datasets. it tracks datasset info so you can easily read the data
 from dataset_service.datasets import AlexandriaDataset
 import lmdb
 from pathlib import Path
 
 from fairchem.core.common.typing import assert_is_instance
 
-class DatasetHandler:
+# used when reading lmdb datasets. it tracks dataset info so you can easily read the data
+class LmdbDatasetHandler:
     def __init__(self, dataset_path: str):
         if dataset_path.contains("alexandria"):
             self.dataset_def = AlexandriaDataset()

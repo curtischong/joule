@@ -24,17 +24,17 @@ class AlexandriaDataset(DatasetDef):
                 FieldDef("energy", np.float64, DataShape.SCALAR),
             ])
         
-    def raw_data_to_lmdb(self, dataset_dir: str, output_dir: str):
-        os.makedirs(output_dir, exist_ok=True)
+    def raw_data_to_lmdb(self, raw_dataset_input_dir: str, lmdb_output_dir: str):
+        os.makedirs(lmdb_output_dir, exist_ok=True)
         db = lmdb.open(
-            f"{output_dir}.lmdb", # TODO out dir
+            f"{lmdb_output_dir}.lmdb", # TODO out dir
             map_size=1099511627776 * 2, # two terabytes is the max size of the db
             subdir=False,
             meminit=False,
             map_async=True,
         )
-        file_paths = sorted(glob.glob(f"{dataset_dir}/*.json.bz2"))[4:]
-        assert len(file_paths) > 0, f"No files found in {dataset_dir}"
+        file_paths = sorted(glob.glob(f"{raw_dataset_input_dir}/*.json.bz2"))[4:]
+        assert len(file_paths) > 0, f"No files found in {raw_dataset_input_dir}"
 
         for filepath in file_paths:
             with bz2.open(filepath, "rt", encoding="utf-8") as fh:
