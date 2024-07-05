@@ -80,7 +80,7 @@ sudo apt install python3.11
 sudo apt install python3.11-venv
 python3.11 -m venv venv
 
-pip install torch submitit ocpmodels numpy torch-geometric PyYAML matplotlib==3.8.3 numba lmdb h5py pymatgen timm ase e3nn wandb tensorboard kaleido jupyterlab crystal-toolkit
+pip install torch submitit ocpmodels numpy torch-geometric PyYAML matplotlib==3.8.3 numba lmdb h5py pymatgen timm ase e3nn wandb tensorboard kaleido jupyterlab crystal-toolkit brotli
 
 # to install this package so we have access to them in jupyter notebooks
 pip install -e .

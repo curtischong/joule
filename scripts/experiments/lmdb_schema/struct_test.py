@@ -16,8 +16,11 @@ packed_data = struct.pack(format_string, data['id'], data['value'], data['active
 
 # TODO: we need to compress the data before storing it in lmdb
 # print(struct.pack(format_string, data['value']))
-print(f"Packed Data: {packed_data}")
-print(f"compressed: {zlib.compress(packed_data)}")
+
+# Note: to interpret the bytes printed to the console, see this: https://claude.ai/chat/7f68e8c4-51ca-4553-903a-f21ea513a5df
+print(f"Packed Data (len={len(packed_data)}): {packed_data}")
+print(f"brotli compressed (len={len(brotli.compress(packed_data))}): {brotli.compress(packed_data)}")
+print(f"zlib compressed (len={len(zlib.compress(packed_data))}): {zlib.compress(packed_data)}")
 
 
 # Unpack the data from the bytes object
