@@ -10,8 +10,7 @@ import os
 
 class AlexandriaDataset(DatasetDef):
     def __init__(self):
-        super().__init__(
-            fields=[
+        super().__init__([
                 # NOTE: float64 is needed for the lattice. float32 is not enough.
                 # e.g. This number cannot fit in a float32 so we need to use float64.
                 # value = np.float32(6.23096541)
@@ -64,5 +63,5 @@ class AlexandriaDataset(DatasetDef):
             compressed = db.get(self._int_to_bytes(i))
             if compressed is None:
                 continue
-            entry = self.from_bytes(compressed)
+            entry = self._from_bytes(compressed)
             yield entry

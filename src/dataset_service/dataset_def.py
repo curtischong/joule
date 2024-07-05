@@ -42,14 +42,8 @@ class FieldDef:
         self.data_shape = data_shape
 
 class DatasetDef(ABC):
-    def __init__(self, *, fields: list[FieldDef]):
+    def __init__(self, fields: list[FieldDef]):
         self.fields = fields
-
-        # self.packed_data = b""
-        # self.packed_data += np.uint16(num_atoms).tobytes() # use an unsigned short with range [0, 65535]
-        # for field in self.fields:
-        #     self.packed_data += field.data_bytes
-
 
     # store the keys as bytes into the LMDB for smaller keys
     def _int_to_bytes(self, x: int):
@@ -75,7 +69,7 @@ class DatasetDef(ABC):
         txn.put(self._int_to_bytes(data_idx), compressed)
         txn.commit()
     
-    def from_bytes(self, packed_data: bytes):
+    def _from_bytes(self, packed_data: bytes):
         res = Data()
         num_atoms = np.frombuffer(packed_data[0:np.dtype(np.uint16).itemsize], dtype=np.uint16)[0].item()
 
