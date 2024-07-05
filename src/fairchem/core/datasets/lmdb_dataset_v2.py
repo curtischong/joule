@@ -24,12 +24,12 @@ class LmdbDatasetV2(Dataset[T_co]):
     def __init__(self, config) -> None:
         super().__init__()
         self.config = config
-        path = Path(self.config["src"])
+        dataset_path = Path(self.config["src"])
 
-        if path.is_file():
-            self.db_paths = [path]
+        if dataset_path.is_file():
+            self.db_paths = [dataset_path]
         else:
-            self.db_paths = sorted(self.path.glob("*.lmdb"))
+            self.db_paths = sorted(dataset_path.glob("*.lmdb"))
             assert len(self.db_paths) > 0, f"No LMDBs found in '{self.path}'"
 
         self.db_handlers: list[LmdbDatasetHandler] = []
