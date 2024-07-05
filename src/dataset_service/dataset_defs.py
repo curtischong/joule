@@ -1,9 +1,10 @@
 from dataset_service.dataset_def import DatasetDef, DataShape, FieldDef
 import numpy as np
-import tqdm
-import os
+from tqdm import tqdm
 import bz2
 import json
+import glob
+from pymatgen.core.periodic_table import Element
 
 class AlexandriaDataset(DatasetDef):
     def __init__(self):
@@ -20,11 +21,14 @@ class AlexandriaDataset(DatasetDef):
             ])
         
     def raw_data_to_lmdb(self, dataset_dir: str):
-        for filename in tqdm(os.listdir(dataset_dir)):
-            with bz2.open(f"{dataset_dir}/{filename}.json.bz2", "rt", encoding="utf-8") as fh:
+        for filepath in tqdm(glob.glob(f"{dataset_dir}/*.json.bz2")):
+            with bz2.open(filepath, "rt", encoding="utf-8") as fh:
                 data = json.load(fh)
-                print(f"processing {filename}")
+                print(f"processing {filepath}")
                 for i in tqdm(range(len(data["entries"]))):
                     entry = data["entries"][i]
                     # compress_and_read_entry(data, c, i)
-                    pass
+                    lattice = entry["structure"]["lattice"]["matrix"]
+                    atomic_numbers = [Element(site["label"]).Z for site in entry["structure"]["sites"]]
+                    frac_coords = [site["abc"] for site in entry["structure"]["sites"]]
+                    energy = entry["energy"]
