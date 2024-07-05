@@ -9,16 +9,16 @@ class DataShape(Enum):
     MATRIX_3x3 = 2
     MATRIX_nx3 = 3
 
-    def to_np_shape(self):
+    def to_np_shape(self, num_atoms: int):
         match self:
             case DataShape.SCALAR:
-                return ()
+                return 1,
             case DataShape.VECTOR:
-                return (self.num_atoms,)
+                return (num_atoms,)
             case DataShape.MATRIX_3x3:
                 return (3, 3)
             case DataShape.MATRIX_nx3:
-                return (self.num_atoms, 3)
+                return (num_atoms, 3)
 
 class DataDefField:
     def __init__(self, name: str, data: np.ndarray, dtype: np.dtype, data_shape: DataShape):
@@ -46,14 +46,12 @@ class DataDef:
         return packed_data
     
     def from_bytes(self, packed_data: bytes):
-        self.num_atoms = packed_data[0: np.dtype(np.uint16).itemsize]
-
         res = Data()
 
         ptr = np.dtype(np.uint16).itemsize
         for field in self.fields:
             data_len = self._data_len(field)
-            res[field.name] = np.frombuffer(packed_data[ptr: ptr + data_len], dtype=field.dtype, shape = field.data_shape.to_np_shape())
+            res[field.name] = np.frombuffer(packed_data[ptr: ptr + data_len], dtype=field.dtype).reshape(field.data_shape.to_np_shape(self.num_atoms))
             ptr += data_len
         return res
     
@@ -92,7 +90,10 @@ def main():
     ])
 
     b = datadef.to_bytes()
-    print(datadef.from_bytes(b))
+    parsed_data = datadef.from_bytes(b)
+    for key, value in parsed_data.items():
+        print(key, value)
+    print(parsed_data["energy"])
 
 if __name__ == "__main__":
     main()
