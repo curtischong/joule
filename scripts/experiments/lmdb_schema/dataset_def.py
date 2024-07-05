@@ -7,6 +7,7 @@ import zlib
 import lzma
 import bz2
 import time
+from run_length_encoding import encode_to_rle_bytes
 
 class DataShape(Enum):
     SCALAR = 0
@@ -103,6 +104,7 @@ def main():
     print(f"zlib compressed (len={len(zlib.compress(packed_data))}): {zlib.compress(packed_data)}")
     print(f"pylzma compressed (len={len(lzma.compress(packed_data))}): {lzma.compress(packed_data)}")
     print(f"bz2 compressed (len={len(bz2.compress(packed_data))}): {bz2.compress(packed_data)}")
+    print(f"rle compressed (len={len(encode_to_rle_bytes(packed_data))}): {encode_to_rle_bytes(packed_data)}")
 
     print(f"Time taken: {time.time() - time_start}")
 
