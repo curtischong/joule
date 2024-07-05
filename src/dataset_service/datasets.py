@@ -24,12 +24,13 @@ class AlexandriaDataset(DatasetDef):
                 FieldDef("energy", np.float64, DataShape.SCALAR),
             ])
         
-    def raw_data_to_lmdb(self, raw_dataset_input_dir: str, lmdb_output_dir: str, max_entries_per_db = 10000):
+    def raw_data_to_lmdb(self, raw_dataset_input_dir: str, lmdb_output_dir: str, max_entries_per_db = 1000000):
         os.makedirs(lmdb_output_dir, exist_ok=True)
 
         ith_total_entry = 0
         db = None
-        file_paths = sorted(glob.glob(f"{raw_dataset_input_dir}/*.json.bz2"))[4:]
+        # file_paths = sorted(glob.glob(f"{raw_dataset_input_dir}/*.json.bz2"))[4:] # use this to only process the last file
+        file_paths = sorted(glob.glob(f"{raw_dataset_input_dir}/*.json.bz2"))
         assert len(file_paths) > 0, f"No files found in {raw_dataset_input_dir}"
 
 

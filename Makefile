@@ -17,11 +17,9 @@ trainall:
 
 trainallsmall:
 	export NUMEXPR_MAX_THREADS=24 && python main.py --mode=train --config-yml=$(CONFIG_YML) --dataset.train.src=$(LMDB_DATASET)val/0.lmdb --dataset.val.src=$(LMDB_DATASET)test/0.lmdb --model.max_num_elements=34 --model.num_layers=2 --model.max_neighbors=8 --model.cutoff=6.0 --optim.batch_size=40 --optim.eval_batch_size=40 --amp
-create_mace_dataset_lmdb:
-	python scripts/dataset_prep/create_mace_dataset_lmdb.py --config-yml=$(CONFIG_YML)
 
-create_real_mace_dataset_lmdb:
-	python scripts/dataset_prep/create_real_mace_dataset_lmdb2.py --config-yml=$(CONFIG_YML)
+prep_v2_format_datasets:
+	python scripts/dataset_prep/prep_v2_format_datasets.py
 
 create_real_mace_dataset_lmdb3:
 	python scripts/dataset_prep/create_real_mace_dataset_lmdb3.py
