@@ -116,32 +116,18 @@
             "justMyCode": true
         },
         {
-            "name": "create mace db",
-            "type": "python",
-            "request": "launch",
-            "program": "scripts/dataset_prep/create_mace_dataset_lmdb.py",
-            "console": "integratedTerminal",
-            "justMyCode": true,
-            "args": [
-                "--config-yml=configs/s2ef/all/joule/upgraded_escn.yml",
-            ],
-        },
-        {
-            "name": "create real mace db",
-            "type": "python",
-            "request": "launch",
-            "program": "scripts/dataset_prep/create_real_mace_dataset_lmdb2.py",
-            "console": "integratedTerminal",
-            "justMyCode": true,
-            "args": [
-                "--config-yml=configs/s2ef/all/joule/upgraded_escn.yml",
-            ],
-        },
-        {
             "name": "create real mace db3",
             "type": "python",
             "request": "launch",
             "program": "scripts/dataset_prep/create_real_mace_dataset_lmdb3.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+        },
+        {
+            "name": "dataset_prep_v2",
+            "type": "python",
+            "request": "launch",
+            "program": "scripts/dataset_prep/prep_v2_format_datasets.py",
             "console": "integratedTerminal",
             "justMyCode": true,
         },

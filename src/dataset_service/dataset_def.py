@@ -12,6 +12,7 @@ import time
 
 from tqdm import tqdm
 from pymatgen.entries.computed_entries import ComputedStructureEntry
+from abc import ABC, abstractmethod
 
 class DataShape(Enum):
     SCALAR = 0
@@ -30,28 +31,20 @@ class DataShape(Enum):
             case DataShape.MATRIX_nx3:
                 return (num_atoms, 3)
 
-class DataDefField:
-    def __init__(self, name: str, data: np.ndarray, dtype: np.dtype, data_shape: DataShape):
+class FieldDef:
+    def __init__(self, name: str, dtype: np.dtype, data_shape: DataShape):
         self.name = name
-        self.data_bytes = data.tobytes()
-
-        # the type of the data matters a lot since it affects how it's packed.
-        # NOTE: we DO NOT want to do a type conversion here to "hotfix" if this assert fails, since it means the original datatype is wrong.
-        assert data.dtype == dtype
         self.dtype = dtype
-        self.shape = data.shape
-
         self.data_shape = data_shape
 
-class DatasetDef:
-    def __init__(self, *, num_atoms: int, fields: list[DataDefField]):
-        # self.num_atoms = num_atoms
+class DatasetDef(ABC):
+    def __init__(self, *, fields: list[FieldDef]):
         self.fields = fields
 
-        self.packed_data = b""
-        self.packed_data += np.uint16(num_atoms).tobytes() # use an unsigned short with range [0, 65535]
-        for field in self.fields:
-            self.packed_data += field.data_bytes
+        # self.packed_data = b""
+        # self.packed_data += np.uint16(num_atoms).tobytes() # use an unsigned short with range [0, 65535]
+        # for field in self.fields:
+        #     self.packed_data += field.data_bytes
     
     def from_bytes(self, packed_data: bytes):
         res = Data()
@@ -64,7 +57,7 @@ class DatasetDef:
             ptr += data_len
         return res
     
-    def _data_len(self, field: DataDefField, num_atoms: int):
+    def _data_len(self, field: FieldDef, num_atoms: int):
         data_shape = field.data_shape
         match data_shape:
             case DataShape.SCALAR:
@@ -75,6 +68,12 @@ class DatasetDef:
                 return np.dtype(field.dtype).itemsize * 9
             case DataShape.MATRIX_nx3:
                 return np.dtype(field.dtype).itemsize * num_atoms * 3
+    
+    @abstractmethod
+    def raw_data_to_lmdb(self, dataset_dir: str):
+        # please use tqdm to track progress
+        pass
+
 
 def compress_and_read_entry(data: any, counter: Counter, ith_sample: int):
     entry = ComputedStructureEntry.from_dict(data["entries"][ith_sample])
@@ -92,14 +91,10 @@ def compress_and_read_entry(data: any, counter: Counter, ith_sample: int):
     datadef = DataDef(
         num_atoms=len(atomic_numbers),
         fields=[
-            # NOTE: float64 is needed for the lattice. float32 is not enough.
-            # e.g. This number cannot fit in a float32 so we need to use float64.
-            # value = np.float32(6.23096541)
-            # print(value)
-            DataDefField("lattice", lattice, np.float64, DataShape.MATRIX_3x3),
-            DataDefField("frac_coords", frac_coords, np.float64, DataShape.MATRIX_nx3),
-            DataDefField("atomic_numbers", atomic_numbers, np.uint8, DataShape.VECTOR), # range is: [0, 255]
-            DataDefField("energy", energy, np.float64, DataShape.SCALAR),
+            FieldDef("lattice", lattice, np.float64, DataShape.MATRIX_3x3),
+            FieldDef("frac_coords", frac_coords, np.float64, DataShape.MATRIX_nx3),
+            FieldDef("atomic_numbers", atomic_numbers, np.uint8, DataShape.VECTOR), # range is: [0, 255]
+            FieldDef("energy", energy, np.float64, DataShape.SCALAR),
         ])
 
     packed_data = datadef.packed_data

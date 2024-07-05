@@ -78,7 +78,7 @@ class DataDef:
                 return np.dtype(field.dtype).itemsize * num_atoms * 3
 
 def compress_and_read_entry(data: any, counter: Counter, ith_sample: int):
-    entry = ComputedStructureEntry.from_dict(data["entries"][ith_sample])
+    entry = ComputedStructureEntry.from_dict(data["entries"][ith_sample]) # this ype conversion is slow. but I'm fine since we're not using this in prod
 
     structure = entry.structure
     atomic_numbers = np.array([site.specie.number for site in structure], dtype=np.uint8)
