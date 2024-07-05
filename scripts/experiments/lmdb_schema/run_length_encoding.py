@@ -39,13 +39,3 @@ def decode_from_rle_bytes(rle_byte_data):
     for value, length in zip(values, lengths):
         decoded.extend([value] * length)
     return bytes(decoded)
-
-# Example usage
-input_bytes = b'\x01\x01\x02\x02\x02\x03\x03\x01\x01\x01'
-print("Original byte array:", input_bytes)
-
-encoded_bytes = encode_to_rle_bytes(input_bytes)
-print("Encoded to RLE bytes:", encoded_bytes)
-
-decoded_bytes = decode_from_rle_bytes(encoded_bytes)
-print("Decoded byte array:", decoded_bytes)
