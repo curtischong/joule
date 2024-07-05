@@ -35,6 +35,8 @@ pip install -e packages/fairchem-{fairchem-package-name}
 `fairchem.core` requires you to first create your environment
 - [Installation Guide](https://fair-chem.github.io/core/install.html)
 
+CURTIS' NOTE: READ THE BOTTOM FOR THE REAL INSTALLATION INSTRUCTIONS
+
 ### Quick Start
 Pretrained models can be used directly with ASE through our `OCPCalculator` interface:
 
@@ -67,3 +69,25 @@ Since many of our repositories rely heavily on our other repositories, a single 
 
 ### LICENSE
 `fairchem` is available under a [MIT License](LICENSE.md).
+
+
+### Real Installation
+```
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt update
+
+sudo apt install python3.11
+sudo apt install python3.11-venv
+python3.11 -m venv venv
+
+pip install torch submitit ocpmodels numpy torch-geometric PyYAML matplotlib==3.8.3 numba lmdb h5py pymatgen timm ase e3nn wandb tensorboard kaleido jupyterlab crystal-toolkit
+
+# to install this package so we have access to them in jupyter notebooks
+pip install -e .
+
+
+# visit https://github.com/rusty1s/pytorch_scatter
+
+python -c "import torch; print(torch.__version__)"
+pip install torch-scatter torch-cluster torch-sparse -f https://data.pyg.org/whl/torch-2.3.0+cu121.html
+```
