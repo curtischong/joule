@@ -29,7 +29,7 @@ class DatasetHandler:
             max_readers=1,
         )
 
-    def _close_db(self) -> None:
+    def close_db(self) -> None:
         if not self.path.is_file():
             for env in self.envs:
                 env.close()

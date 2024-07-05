@@ -7,26 +7,13 @@ LICENSE file in the root directory of this source tree.
 from __future__ import annotations
 
 import bisect
-import logging
-import pickle
-import warnings
 from pathlib import Path
 from typing import TypeVar
 
-import lmdb
-import numpy as np
-import torch
 from torch.utils.data import Dataset
-from torch_geometric.data import Batch
-from torch_geometric.data.data import BaseData
-from tqdm import tqdm
 from dataset_service.datasets import AlexandriaDataset
-from dataset_service.tools import int_to_bytes
 
 from fairchem.core.common.registry import registry
-from fairchem.core.common.typing import assert_is_instance
-from fairchem.core.common.utils import pyg2_data_transform
-from fairchem.core.datasets._utils import rename_data_object_keys
 from fairchem.core.datasets.dataset_handler import DatasetHandler
 
 T_co = TypeVar("T_co", covariant=True)
@@ -75,3 +62,7 @@ class LmdbDatasetV2(Dataset[T_co]):
         data_object.dataset_path = str(self.path)
         data_object.data_idx = idx
         return data_object
+
+    def close_db(self) -> None:
+        for handler in self.db_handlers:
+            handler.close_db()
