@@ -51,7 +51,9 @@ class DatasetDef(ABC):
         packed_data = np.uint16(num_atoms).tobytes() # start off with the number of atoms
 
         for field in self.fields:
-            packed_data += entry_data[field.name].tobytes()
+            field_data = entry_data[field.name]
+            assert field_data.dtype == field.dtype
+            packed_data += field_data.tobytes()
 
         return zlib.compress(packed_data) # we are using zlib since our experiemnt in scripts/experiments/lmdb_schema/dataset_def_use_real_data.py had the best results
 

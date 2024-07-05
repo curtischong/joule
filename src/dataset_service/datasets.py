@@ -45,10 +45,10 @@ class AlexandriaDataset(DatasetDef):
                     structure = entry["structure"]
 
                     entry_data = {
-                        "lattice": structure["lattice"]["matrix"],
-                        "atomic_numbers": [Element(site["label"]).Z for site in structure["sites"]],
-                        "frac_coords": [site["abc"] for site in structure["sites"]],
-                        "energy": entry["energy"],
+                        "lattice": np.array(structure["lattice"]["matrix"], dtype=np.float64),
+                        "atomic_numbers": np.array([Element(site["label"]).Z for site in structure["sites"]], dtype=np.uint8),
+                        "frac_coords": np.array([site["abc"] for site in structure["sites"]], dtype=np.float64),
+                        "energy": np.float64(entry["energy"]),
                     }
                     compressed = self._pack_entry(entry_data, len(structure["sites"]))
                     self._save_entry(db, i, compressed)
