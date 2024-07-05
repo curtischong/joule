@@ -43,16 +43,17 @@ class LmdbDatasetV2(Dataset[T_co]):
             self.db_paths = sorted(self.path.glob("*.lmdb"))
             assert len(self.db_paths) > 0, f"No LMDBs found in '{self.path}'"
 
+        self.dbs = []
         self.key_prefix_sum_arr = [0]
         for path in self.db_paths:
-            num_entries = assert_is_instance(self.db.stat()["entries"], int)
+            db = self.connect_db(self.path)
+            num_entries = assert_is_instance(db.stat()["entries"], int)
             self.key_prefix_sum_arr.append(self.key_prefix_sum_arr[-1] + num_entries)
+            self.dbs.append(db)
 
-        # TODO: should we all connect to the same db? No!
-        self.db = self.connect_db(self.path)
 
     def __len__(self) -> int:
-        return self.num_samples
+        return self.key_prefix_sum_arr[-1]
 
     def __getitem__(self, idx: int) -> T_co:
         # if sharding, remap idx to appropriate idx of the sharded set
