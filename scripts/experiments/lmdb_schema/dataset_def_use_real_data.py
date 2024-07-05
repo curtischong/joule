@@ -145,7 +145,7 @@ def main():
         compress_and_read_entry(data, c, i)
     print(f"num_entries: {len(data['entries'])}")
     for k, v in c.items():
-        print(f"{k}: {v}")
+        print(f"{k:12} {v}")
 
 if __name__ == "__main__":
     main()
