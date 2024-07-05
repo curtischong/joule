@@ -35,25 +35,21 @@ class LmdbDatasetV2(Dataset[T_co]):
     def __init__(self, config) -> None:
         super().__init__()
         self.config = config
-        self.path = Path(self.config["src"])
-        if not self.path.is_file():
-            db_paths = sorted(self.path.glob("*.lmdb"))
+        path = Path(self.config["src"])
 
-
-        assert len(db_paths) > 0, f"No LMDBs found in '{self.path}'"
-        self.env = self.connect_db(self.path)
-
-        # If "length" encoded as ascii is present, use that
-        length_entry = self.env.begin().get("length".encode("ascii"))
-        if length_entry is not None:
-            num_entries = pickle.loads(length_entry)
+        if path.is_file():
+            self.db_paths = [path]
         else:
-            # Get the number of stores data from the number of entries
-            # in the LMDB
-            num_entries = assert_is_instance(self.env.stat()["entries"], int)
+            self.db_paths = sorted(self.path.glob("*.lmdb"))
+            assert len(self.db_paths) > 0, f"No LMDBs found in '{self.path}'"
 
-        self._keys = list(range(num_entries))
-        self.num_samples = num_entries
+        self.key_prefix_sum_arr = [0]
+        for path in self.db_paths:
+            num_entries = assert_is_instance(self.db.stat()["entries"], int)
+            self.key_prefix_sum_arr.append(self.key_prefix_sum_arr[-1] + num_entries)
+
+        # TODO: should we all connect to the same db? No!
+        self.db = self.connect_db(self.path)
 
     def __len__(self) -> int:
         return self.num_samples
