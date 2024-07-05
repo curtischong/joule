@@ -2,6 +2,11 @@ import numpy as np
 from torch_geometric.data import Data
 
 from enum import Enum
+import brotli
+import zlib
+import lzma
+import bz2
+import time
 
 class DataShape(Enum):
     SCALAR = 0
@@ -89,8 +94,20 @@ def main():
         DataDefField("energy", energy, np.float64, DataShape.SCALAR),
     ])
 
-    b = datadef.to_bytes()
-    parsed_data = datadef.from_bytes(b)
+    packed_data = datadef.to_bytes()
+
+    time_start = time.time()
+
+    print(f"Packed Data (len={len(packed_data)}): {packed_data}")
+    print(f"brotli compressed (len={len(brotli.compress(packed_data))}): {brotli.compress(packed_data)}")
+    print(f"zlib compressed (len={len(zlib.compress(packed_data))}): {zlib.compress(packed_data)}")
+    print(f"pylzma compressed (len={len(lzma.compress(packed_data))}): {lzma.compress(packed_data)}")
+    print(f"bz2 compressed (len={len(bz2.compress(packed_data))}): {bz2.compress(packed_data)}")
+
+    print(f"Time taken: {time.time() - time_start}")
+
+
+    parsed_data = datadef.from_bytes(packed_data)
     for key, value in parsed_data.items():
         print(key, value)
     print(parsed_data["energy"])
