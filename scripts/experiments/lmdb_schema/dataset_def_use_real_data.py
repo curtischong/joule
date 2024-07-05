@@ -1,3 +1,4 @@
+import json
 import numpy as np
 from torch_geometric.data import Data
 
@@ -8,9 +9,7 @@ import lzma
 import bz2
 import time
 from run_length_encoding import encode_to_rle_bytes
-import json
 from pymatgen.entries.computed_entries import ComputedStructureEntry
-import struct
 
 class DataShape(Enum):
     SCALAR = 0
@@ -32,13 +31,11 @@ class DataShape(Enum):
 class DataDefField:
     def __init__(self, name: str, data: np.ndarray, dtype: np.dtype, data_shape: DataShape):
         self.name = name
-
         self.data_bytes = data.tobytes()
 
         # the type of the data matters a lot since it affects how it's packed.
         # NOTE: we DO NOT want to do a type conversion here to "hotfix" if this assert fails, since it means the original datatype is wrong.
         assert data.dtype == dtype
-
         self.dtype = dtype
         self.shape = data.shape
 
@@ -98,7 +95,7 @@ def main():
     atomic_numbers = np.array([site.specie.number for site in structure], dtype=np.uint8)
     lattice = structure.lattice.matrix
     frac_coords = structure.frac_coords
-    energy = np.ScalarType(entry.energy, dtype=np.float64)
+    energy = np.float64(entry.energy)
     print(f"atomic_numbers: {atomic_numbers}")
     print(f"lattice: {lattice}")
     print(f"frac_coords: {frac_coords}")
