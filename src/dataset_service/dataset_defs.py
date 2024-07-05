@@ -45,7 +45,24 @@ class AlexandriaDataset(DatasetDef):
                         "frac_coords": [site["abc"] for site in structure["sites"]],
                         "energy": entry["energy"],
                     }
-                    self._pack_data(db, entry_data, i, len(structure["sites"]))
+                    compressed = self._pack_entry(db, entry_data, len(structure["sites"]))
+                    self._save_entry(db, i, compressed)
 
         db.sync()
         db.close()
+    
+    def read_lmdb(self, db_path: str):
+        db = lmdb.open(
+            db_path,
+            subdir=False,
+            readonly=True,
+            lock=False,
+            readahead=False,
+            meminit=False,
+        )
+        for i in tqdm(range(db.stat()["entries"])):
+            compressed = db.get(self._int_to_bytes(i))
+            if compressed is None:
+                continue
+            entry = self.from_bytes(compressed)
+            yield entry

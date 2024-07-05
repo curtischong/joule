@@ -58,17 +58,16 @@ class DatasetDef(ABC):
     # Function to convert bytes back to integer
     def _bytes_to_int(self, b: bytes):
         return int.from_bytes(b, 'big')
+    
+    def _pack_entry(self, entry_data: dict[FieldName, np.ndarray], num_atoms: int):
+        packed_data = np.uint16(num_atoms).tobytes() # start off with the number of atoms
 
-    def _pack_data(self, db: Environment, entry_data: dict[FieldName, np.ndarray], data_idx: int, num_atoms: int):
-        packed_data = b""
-        packed_data += np.uint16(num_atoms).tobytes() # use an unsigned short with range [0, 65535]
-
-        # np_data 
         for field in self.fields:
             packed_data += entry_data[field.name].tobytes()
 
-        compressed = zlib.compress(packed_data) # we are using zlib since our experiemnt in scripts/experiments/lmdb_schema/dataset_def_use_real_data.py had the best results
+        return zlib.compress(packed_data) # we are using zlib since our experiemnt in scripts/experiments/lmdb_schema/dataset_def_use_real_data.py had the best results
 
+    def _save_entry(self, db: Environment, data_idx: int, compressed: bytes):
         # TODO: investigate if we can be faster by not committing every time
         # https://github.com/jnwatson/py-lmdb/issues/63
         # I think commiting everytime is slightly better since it automates pointer incrementation (and it's done in c, not python)
