@@ -88,7 +88,8 @@ def main():
     with bz2.open(f"{IN_DIR}/{filename}.json.bz2", "rt", encoding="utf-8") as fh:
         data = json.load(fh)
 
-    ith_sample = 1
+    ith_sample = 9
+    print(f"ith_sample: {ith_sample}")
     entry = ComputedStructureEntry.from_dict(data["entries"][ith_sample])
 
     structure = entry.structure
@@ -96,10 +97,10 @@ def main():
     lattice = structure.lattice.matrix
     frac_coords = structure.frac_coords
     energy = np.float64(entry.energy)
-    print(f"atomic_numbers: {atomic_numbers}")
-    print(f"lattice: {lattice}")
-    print(f"frac_coords: {frac_coords}")
-    print(f"Energy: {energy}")
+    # print(f"atomic_numbers: {atomic_numbers}")
+    # print(f"lattice: {lattice}")
+    # print(f"frac_coords: {frac_coords}")
+    # print(f"Energy: {energy}")
 
 
     datadef = DataDef(
@@ -115,20 +116,31 @@ def main():
 
     time_start = time.time()
 
-    print(f"Packed Data (len={len(packed_data)}): {packed_data}")
-    print(f"brotli compressed (len={len(brotli.compress(packed_data))}): {brotli.compress(packed_data)}")
-    print(f"zlib compressed (len={len(zlib.compress(packed_data))}): {zlib.compress(packed_data)}")
-    print(f"pylzma compressed (len={len(lzma.compress(packed_data))}): {lzma.compress(packed_data)}")
-    print(f"bz2 compressed (len={len(bz2.compress(packed_data))}): {bz2.compress(packed_data)}")
-    print(f"rle compressed (len={len(encode_to_rle_bytes(packed_data))}): {encode_to_rle_bytes(packed_data)}")
+    # print(f"Packed Data (len={len(packed_data)}): {packed_data}")
+    # print(f"brotli compressed (len={len(brotli.compress(packed_data))}): {brotli.compress(packed_data)}")
+    # print(f"zlib compressed (len={len(zlib.compress(packed_data))}): {zlib.compress(packed_data)}")
+    # print(f"pylzma compressed (len={len(lzma.compress(packed_data))}): {lzma.compress(packed_data)}")
+    # print(f"bz2 compressed (len={len(bz2.compress(packed_data))}): {bz2.compress(packed_data)}")
+    # print(f"rle compressed (len={len(encode_to_rle_bytes(packed_data))}): {encode_to_rle_bytes(packed_data)}")
+
+    print(f"brotli compressed (len={len(brotli.compress(packed_data))})")
+    print(f"zlib compressed (len={len(zlib.compress(packed_data))})")
+    print(f"pylzma compressed (len={len(lzma.compress(packed_data))})")
+    print(f"bz2 compressed (len={len(bz2.compress(packed_data))})")
+    print(f"rle compressed (len={len(encode_to_rle_bytes(packed_data))})")
 
     print(f"Time taken: {time.time() - time_start}")
 
 
     parsed_data = datadef.from_bytes(packed_data)
-    for key, value in parsed_data.items():
-        print(key, value)
-    print(parsed_data["energy"])
+    # for key, value in parsed_data.items():
+    #     print(key, value)
+    # print(parsed_data["energy"])
+
+    assert np.array_equal(lattice, parsed_data["lattice"])
+    assert np.array_equal(frac_coords, parsed_data["frac_coords"])
+    assert energy == parsed_data["energy"]
+    assert np.array_equal(atomic_numbers, parsed_data["atomic_numbers"])
 
 if __name__ == "__main__":
     main()
