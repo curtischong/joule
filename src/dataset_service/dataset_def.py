@@ -1,13 +1,11 @@
 from typing import TypeAlias
 import numpy as np
 from torch_geometric.data import Data
-
 from enum import Enum
 import zlib
-
 from abc import ABC, abstractmethod
 from lmdb import Environment
-
+import lmdb
 from dataset_service.tools import int_to_bytes
 
 class DataShape(Enum):
@@ -90,3 +88,11 @@ class DatasetDef(ABC):
             case DataShape.MATRIX_nx3:
                 return np.dtype(field.dtype).itemsize * num_atoms * 3
     
+    def _open_write_db(self, lmdb_output_dir: str, ith_db: int = 0):
+        return lmdb.open(
+            f"{lmdb_output_dir}/{ith_db}.lmdb", # TODO out dir
+            map_size=1099511627776 * 2, # two terabytes is the max size of the db
+            subdir=False,
+            meminit=False,
+            map_async=True,
+        )
