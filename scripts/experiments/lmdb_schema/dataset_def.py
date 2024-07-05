@@ -1,6 +1,12 @@
 import numpy as np
 from torch_geometric.data import Data
 
+data_shapes = {
+    0: (1,),
+    1: (3, 3),
+    2: (3, n),
+}
+
 class DataDefField:
     def __init__(self, name, data, dtype, is_fixed_size=True):
         self.name = name
@@ -9,6 +15,8 @@ class DataDefField:
         # the type of the data matters a lot since it affects how it's packed.
         # NOTE: we DO NOT want to do a type conversion here to "hotfix" if this assert fails, since it means the original datatype is wrong.
         assert data.dtype == dtype
+        self.dtype = dtype
+        self.shape = data.shape
 
         self.is_fixed_size = is_fixed_size
 
@@ -30,12 +38,17 @@ class DataDef:
         res = Data()
 
         ptr = np.dtype(np.uint16).itemsize
+        print(f"ptr: {ptr}")
         for field in self.fields:
             # TODO: this needs work
             if field.is_fixed_size:
-                res[field.name] = field.from_bytes(packed_data[ptr: ptr + field.data_bytes.nbytes])
-                ptr += field.data_bytes.nbytes
+                data_len = np.dtype(field.dtype).itemsize
+                res[field.name] = np.frombuffer(packed_data[ptr: ptr + data_len])
+                ptr += data_len
             else:
+                data_len = np.dtype(field.dtype).itemsize * self.num_atoms
+                res[field.name] = np.frombuffer(packed_data[ptr: ptr + data_len])
+                ptr += data_len
                 field.from_bytes(packed_data[ptr:])
                 ptr += field.data_bytes.nbytes
         return res
@@ -48,10 +61,10 @@ def main():
     # value = np.float32(6.23096541)
     # print(value)
 
-    lattice = np.array([[6.23096541, 0., 0.], [0., 6.23096541, 0.], [-3.1154827, -3.1154827, 6.28232566]])
-    frac_coords = np.array([[0.0, 0.0, 0.0], [0.0, 0.5, 0.0], [0.0, 0.0, 0.5], [0.5, 0.0, 0.0], [0.5, 0.5, 0.5]])
-    atomic_numbers = np.array([30, 16, 16, 16, 49])
-    energy = np.array([-16.5690])[0]
+    lattice = np.array([[6.23096541, 0., 0.], [0., 6.23096541, 0.], [-3.1154827, -3.1154827, 6.28232566]], dtype=np.float64)
+    frac_coords = np.array([[0.0, 0.0, 0.0], [0.0, 0.5, 0.0], [0.0, 0.0, 0.5], [0.5, 0.0, 0.0], [0.5, 0.5, 0.5]], dtype=np.float64)
+    atomic_numbers = np.array([30, 16, 16, 16, 49], dtype=np.uint8)
+    energy = np.array([-16.5690], dtype=np.float64)[0]
 
     datadef = DataDef(
         num_atoms=len(atomic_numbers),
@@ -61,6 +74,9 @@ def main():
         DataDefField("atomic_numbers", atomic_numbers, np.uint8), # range is: [0, 255]
         DataDefField("energy", energy, np.float64),
     ])
+
+    b = datadef.to_bytes()
+    print(datadef.from_bytes(b))
 
 if __name__ == "__main__":
     main()
