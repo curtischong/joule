@@ -1,5 +1,6 @@
 from collections import Counter
 import json
+from typing import TypeAlias
 import numpy as np
 from torch_geometric.data import Data
 
@@ -9,10 +10,12 @@ import zlib
 import lzma
 import bz2
 import time
+import zlib
 
 from tqdm import tqdm
 from pymatgen.entries.computed_entries import ComputedStructureEntry
 from abc import ABC, abstractmethod
+from lmdb import Environment
 
 class DataShape(Enum):
     SCALAR = 0
@@ -31,8 +34,9 @@ class DataShape(Enum):
             case DataShape.MATRIX_nx3:
                 return (num_atoms, 3)
 
+FieldName: TypeAlias = str
 class FieldDef:
-    def __init__(self, name: str, dtype: np.dtype, data_shape: DataShape):
+    def __init__(self, name: FieldName, dtype: np.dtype, data_shape: DataShape):
         self.name = name
         self.dtype = dtype
         self.data_shape = data_shape
@@ -45,6 +49,30 @@ class DatasetDef(ABC):
         # self.packed_data += np.uint16(num_atoms).tobytes() # use an unsigned short with range [0, 65535]
         # for field in self.fields:
         #     self.packed_data += field.data_bytes
+
+
+    # store the keys as bytes into the LMDB for smaller keys
+    def _int_to_bytes(self, x: int):
+        return x.to_bytes((x.bit_length() + 7) // 8, 'big') or b'\0'
+    
+    # Function to convert bytes back to integer
+    def _bytes_to_int(self, b: bytes):
+        return int.from_bytes(b, 'big')
+
+    def _pack_data(self, db: Environment, data: dict[FieldName, FieldDef], data_idx: int):
+        packed_data = b""
+        packed_data += np.uint16(data.num_nodes).tobytes() # use an unsigned short with range [0, 65535]
+        for field in self.fields:
+            packed_data += field.data_bytes
+
+        compressed = zlib.compress(packed_data) # we are using zlib since our experiemnt in scripts/experiments/lmdb_schema/dataset_def_use_real_data.py had the best results
+
+        # TODO: investigate if we can be faster by not committing every time
+        # https://github.com/jnwatson/py-lmdb/issues/63
+        # I think commiting everytime is slightly better since it automates pointer incrementation (and it's done in c, not python)
+        txn = db.begin(write=True)
+        txn.put(self._int_to_bytes(data_idx), compressed)
+        txn.commit()
     
     def from_bytes(self, packed_data: bytes):
         res = Data()

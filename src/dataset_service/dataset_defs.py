@@ -1,3 +1,4 @@
+import lmdb
 from dataset_service.dataset_def import DatasetDef, DataShape, FieldDef
 import numpy as np
 from tqdm import tqdm
@@ -5,6 +6,7 @@ import bz2
 import json
 import glob
 from pymatgen.core.periodic_table import Element
+import os
 
 class AlexandriaDataset(DatasetDef):
     def __init__(self):
@@ -20,15 +22,30 @@ class AlexandriaDataset(DatasetDef):
                 FieldDef("energy", np.float64, DataShape.SCALAR),
             ])
         
-    def raw_data_to_lmdb(self, dataset_dir: str):
+    def raw_data_to_lmdb(self, dataset_dir: str, output_dir: str):
+        os.makedirs(output_dir, exist_ok=True)
+        db = lmdb.open(
+            f"{output_dir}.lmdb", # TODO out dir
+            map_size=1099511627776 * 2, # two terabytes is the max size of the db
+            subdir=False,
+            meminit=False,
+            map_async=True,
+        )
         for filepath in tqdm(glob.glob(f"{dataset_dir}/*.json.bz2")):
             with bz2.open(filepath, "rt", encoding="utf-8") as fh:
                 data = json.load(fh)
                 print(f"processing {filepath}")
                 for i in tqdm(range(len(data["entries"]))):
                     entry = data["entries"][i]
-                    # compress_and_read_entry(data, c, i)
-                    lattice = entry["structure"]["lattice"]["matrix"]
-                    atomic_numbers = [Element(site["label"]).Z for site in entry["structure"]["sites"]]
-                    frac_coords = [site["abc"] for site in entry["structure"]["sites"]]
+                    structure = entry["structure"]
+
+                    lattice = structure["lattice"]["matrix"]
+                    atomic_numbers = [Element(site["label"]).Z for site in structure["sites"]]
+                    frac_coords = [site["abc"] for site in structure["sites"]]
                     energy = entry["energy"]
+
+
+
+
+        db.sync()
+        db.close()
