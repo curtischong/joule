@@ -33,7 +33,10 @@ class AlexandriaDataset(DatasetDef):
             meminit=False,
             map_async=True,
         )
-        for filepath in tqdm(glob.glob(f"{dataset_dir}/*.json.bz2")):
+        file_paths = glob.glob(f"{dataset_dir}/*.json.bz2")[4:]
+        assert len(file_paths) > 0, f"No files found in {dataset_dir}"
+
+        for filepath in file_paths:
             with bz2.open(filepath, "rt", encoding="utf-8") as fh:
                 data = json.load(fh)
                 print(f"processing {filepath}")
@@ -47,7 +50,7 @@ class AlexandriaDataset(DatasetDef):
                         "frac_coords": [site["abc"] for site in structure["sites"]],
                         "energy": entry["energy"],
                     }
-                    compressed = self._pack_entry(db, entry_data, len(structure["sites"]))
+                    compressed = self._pack_entry(entry_data, len(structure["sites"]))
                     self._save_entry(db, i, compressed)
 
         db.sync()
