@@ -1,14 +1,27 @@
 import numpy as np
 from torch_geometric.data import Data
 
-data_shapes = {
-    0: (1,),
-    1: (3, 3),
-    2: (3, n),
-}
+from enum import Enum
+
+class DataShape(Enum):
+    SCALAR = 0
+    VECTOR = 1 # 1D tensor
+    MATRIX_3x3 = 2
+    MATRIX_nx3 = 3
+
+    def to_np_shape(self):
+        match self:
+            case DataShape.SCALAR:
+                return ()
+            case DataShape.VECTOR:
+                return (self.num_atoms,)
+            case DataShape.MATRIX_3x3:
+                return (3, 3)
+            case DataShape.MATRIX_nx3:
+                return (self.num_atoms, 3)
 
 class DataDefField:
-    def __init__(self, name, data, dtype, is_fixed_size=True):
+    def __init__(self, name: str, data: np.ndarray, dtype: np.dtype, data_shape: DataShape):
         self.name = name
         self.data_bytes = data.tobytes()
 
@@ -18,7 +31,7 @@ class DataDefField:
         self.dtype = dtype
         self.shape = data.shape
 
-        self.is_fixed_size = is_fixed_size
+        self.data_shape = data_shape
 
 class DataDef:
     def __init__(self, *, num_atoms: int, fields: list[DataDefField]):
@@ -38,20 +51,23 @@ class DataDef:
         res = Data()
 
         ptr = np.dtype(np.uint16).itemsize
-        print(f"ptr: {ptr}")
         for field in self.fields:
-            # TODO: this needs work
-            if field.is_fixed_size:
-                data_len = np.dtype(field.dtype).itemsize
-                res[field.name] = np.frombuffer(packed_data[ptr: ptr + data_len])
-                ptr += data_len
-            else:
-                data_len = np.dtype(field.dtype).itemsize * self.num_atoms
-                res[field.name] = np.frombuffer(packed_data[ptr: ptr + data_len])
-                ptr += data_len
-                field.from_bytes(packed_data[ptr:])
-                ptr += field.data_bytes.nbytes
+            data_len = self._data_len(field)
+            res[field.name] = np.frombuffer(packed_data[ptr: ptr + data_len], dtype=field.dtype, shape = field.data_shape.to_np_shape())
+            ptr += data_len
         return res
+    
+    def _data_len(self, field: DataDefField):
+        data_shape = field.data_shape
+        match data_shape:
+            case DataShape.SCALAR:
+                return np.dtype(field.dtype).itemsize
+            case DataShape.VECTOR:
+                return np.dtype(field.dtype).itemsize * self.num_atoms
+            case DataShape.MATRIX_3x3:
+                return np.dtype(field.dtype).itemsize * 9
+            case DataShape.MATRIX_nx3:
+                return np.dtype(field.dtype).itemsize * self.num_atoms * 3
 
 
 
@@ -69,10 +85,10 @@ def main():
     datadef = DataDef(
         num_atoms=len(atomic_numbers),
         fields=[
-        DataDefField("lattice", lattice, np.float64),
-        DataDefField("frac_coords", frac_coords, np.float64),
-        DataDefField("atomic_numbers", atomic_numbers, np.uint8), # range is: [0, 255]
-        DataDefField("energy", energy, np.float64),
+        DataDefField("lattice", lattice, np.float64, DataShape.MATRIX_3x3),
+        DataDefField("frac_coords", frac_coords, np.float64, DataShape.MATRIX_nx3),
+        DataDefField("atomic_numbers", atomic_numbers, np.uint8, DataShape.VECTOR), # range is: [0, 255]
+        DataDefField("energy", energy, np.float64, DataShape.SCALAR),
     ])
 
     b = datadef.to_bytes()
