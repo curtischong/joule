@@ -4,7 +4,10 @@ import numpy as np
 from torch_geometric.data import Data
 
 from enum import Enum
+import brotli
 import zlib
+import lzma
+import bz2
 import time
 
 from tqdm import tqdm
@@ -40,39 +43,38 @@ class DataDefField:
 
         self.data_shape = data_shape
 
-class DataDef:
+class DatasetDef:
     def __init__(self, *, num_atoms: int, fields: list[DataDefField]):
-        self.num_atoms = num_atoms
+        # self.num_atoms = num_atoms
         self.fields = fields
 
-    def to_bytes(self):
-        packed_data = b""
-        packed_data += np.uint16(self.num_atoms).tobytes() # use an unsigned short with range [0, 65535]
+        self.packed_data = b""
+        self.packed_data += np.uint16(num_atoms).tobytes() # use an unsigned short with range [0, 65535]
         for field in self.fields:
-            packed_data += field.data_bytes
-        return packed_data
+            self.packed_data += field.data_bytes
     
     def from_bytes(self, packed_data: bytes):
         res = Data()
+        num_atoms = np.frombuffer(packed_data[0:np.dtype(np.uint16).itemsize], dtype=np.uint16)[0].item()
 
         ptr = np.dtype(np.uint16).itemsize
         for field in self.fields:
-            data_len = self._data_len(field)
-            res[field.name] = np.frombuffer(packed_data[ptr: ptr + data_len], dtype=field.dtype).reshape(field.data_shape.to_np_shape(self.num_atoms))
+            data_len = self._data_len(field, num_atoms)
+            res[field.name] = np.frombuffer(packed_data[ptr: ptr + data_len], dtype=field.dtype).reshape(field.data_shape.to_np_shape(num_atoms))
             ptr += data_len
         return res
     
-    def _data_len(self, field: DataDefField):
+    def _data_len(self, field: DataDefField, num_atoms: int):
         data_shape = field.data_shape
         match data_shape:
             case DataShape.SCALAR:
                 return np.dtype(field.dtype).itemsize
             case DataShape.VECTOR:
-                return np.dtype(field.dtype).itemsize * self.num_atoms
+                return np.dtype(field.dtype).itemsize * num_atoms
             case DataShape.MATRIX_3x3:
                 return np.dtype(field.dtype).itemsize * 9
             case DataShape.MATRIX_nx3:
-                return np.dtype(field.dtype).itemsize * self.num_atoms * 3
+                return np.dtype(field.dtype).itemsize * num_atoms * 3
 
 def compress_and_read_entry(data: any, counter: Counter, ith_sample: int):
     entry = ComputedStructureEntry.from_dict(data["entries"][ith_sample])
@@ -100,16 +102,23 @@ def compress_and_read_entry(data: any, counter: Counter, ith_sample: int):
             DataDefField("energy", energy, np.float64, DataShape.SCALAR),
         ])
 
-    packed_data = datadef.to_bytes()
+    packed_data = datadef.packed_data
 
     time_start = time.time()
 
+    brotli_compressed = brotli.compress(packed_data)
     zlib_compressed = zlib.compress(packed_data)
+    pylzma_compressed = lzma.compress(packed_data)
+    bz2_compressed = bz2.compress(packed_data)
+    counter["uncompressed"] += len(packed_data)
+    counter["brotli"] += len(brotli_compressed)
+    counter["zlib"] += len(zlib_compressed)
+    counter["pylzma"] += len(pylzma_compressed)
+    counter["bz2"] += len(bz2_compressed)
     # print(f"brotli compressed (len={len(brotli_compressed)})")
     # print(f"zlib compressed (len={len(zlib_compressed)})")
     # print(f"pylzma compressed (len={len(pylzma_compressed)})")
     # print(f"bz2 compressed (len={len(bz2_compressed)})")
-    # print(f"rle compressed (len={len(rle_compressed)})")
 
     # print(f"time took to compress: {time.time() - time_start}")
 
@@ -133,6 +142,15 @@ def main():
     print(f"num_entries: {len(data['entries'])}")
     for k, v in c.items():
         print(f"{k:12} {v}")
+
+    """
+    num_entries: 15419
+    brotli       13960
+    zlib         10814
+    pylzma       16852
+    bz2          17513
+    rle          22392
+    """
 
 if __name__ == "__main__":
     main()
