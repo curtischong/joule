@@ -8,6 +8,9 @@ import glob
 from pymatgen.core.periodic_table import Element
 import os
 
+# This class handles marhalling and unmarshalling of the data
+# the reason why it does NOT have its own db connection inside is because
+# we do NOT know if you are writing to the db or reading from it (which requires diff .open() settings)
 class AlexandriaDataset(DatasetDef):
     def __init__(self):
         super().__init__([
@@ -49,19 +52,3 @@ class AlexandriaDataset(DatasetDef):
 
         db.sync()
         db.close()
-    
-    def read_lmdb(self, db_path: str):
-        db = lmdb.open(
-            db_path,
-            subdir=False,
-            readonly=True,
-            lock=False,
-            readahead=False,
-            meminit=False,
-        )
-        for i in tqdm(range(db.stat()["entries"])):
-            compressed = db.get(self._int_to_bytes(i))
-            if compressed is None:
-                continue
-            entry = self._from_bytes(compressed)
-            yield entry

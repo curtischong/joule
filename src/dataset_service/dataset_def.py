@@ -38,6 +38,15 @@ class DatasetDef(ABC):
     def __init__(self, fields: list[FieldDef]):
         self.fields = fields
 
+    def read_entry(self, db: Environment, idx: int):
+        compressed = db.begin().get(int_to_bytes(idx))
+        return self._from_bytes(compressed)
+
+    @abstractmethod
+    def raw_data_to_lmdb(self, dataset_dir: str):
+        # please use tqdm to track progress
+        pass
+
     def _pack_entry(self, entry_data: dict[FieldName, np.ndarray], num_atoms: int):
         packed_data = np.uint16(num_atoms).tobytes() # start off with the number of atoms
 
@@ -77,8 +86,3 @@ class DatasetDef(ABC):
             case DataShape.MATRIX_nx3:
                 return np.dtype(field.dtype).itemsize * num_atoms * 3
     
-    @abstractmethod
-    def raw_data_to_lmdb(self, dataset_dir: str):
-        # please use tqdm to track progress
-        pass
-

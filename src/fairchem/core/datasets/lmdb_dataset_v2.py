@@ -19,12 +19,15 @@ import torch
 from torch.utils.data import Dataset
 from torch_geometric.data import Batch
 from torch_geometric.data.data import BaseData
+from tqdm import tqdm
+from dataset_service.datasets import AlexandriaDataset
 from dataset_service.tools import int_to_bytes
 
 from fairchem.core.common.registry import registry
 from fairchem.core.common.typing import assert_is_instance
 from fairchem.core.common.utils import pyg2_data_transform
 from fairchem.core.datasets._utils import rename_data_object_keys
+from fairchem.core.datasets.dataset_handler import DatasetHandler
 
 T_co = TypeVar("T_co", covariant=True)
 
@@ -44,13 +47,16 @@ class LmdbDatasetV2(Dataset[T_co]):
             self.db_paths = sorted(self.path.glob("*.lmdb"))
             assert len(self.db_paths) > 0, f"No LMDBs found in '{self.path}'"
 
-        self.dbs = []
+        self.db_handlers: list[DatasetHandler] = []
         self.db_size_psa = [0] # psa = prefix sum array
         for path in self.db_paths:
-            db = self.connect_db(self.path)
-            num_entries = assert_is_instance(db.stat()["entries"], int)
-            self.db_size_psa.append(self.db_size_psa[-1] + num_entries)
-            self.dbs.append(db)
+            db_handler = DatasetHandler(path)
+            self.db_handlers.append(db_handler)
+            self.db_size_psa.append(self.db_size_psa[-1] + db_handler.num_entries)
+
+        self.dataset_defs = {
+            "alexandria": AlexandriaDataset(),
+        }
 
 
     def __len__(self) -> int:
@@ -65,43 +71,7 @@ class LmdbDatasetV2(Dataset[T_co]):
             idx_in_db = idx - self.db_size_psa[db_idx - 1]
         assert idx_in_db >= 0
 
-        # Return features.
-        datapoint_pickled = (
-            self.envs[db_idx]
-            .begin()
-            .get(int_to_bytes(idx_in_db))
-        )
-        # data_object = pyg2_data_transform(pickle.loads(datapoint_pickled))
-        # data_object.id = f"{db_idx}_{idx_in_db}"
-
-        # else:
-        #     datapoint_pickled = self.env.begin().get(
-        #         f"{self._keys[idx]}".encode("ascii")
-        #     )
-        #     data_object = pyg2_data_transform(pickle.loads(datapoint_pickled))
-
-        if self.key_mapping is not None:
-            data_object = rename_data_object_keys(data_object, self.key_mapping)
-
+        data_object = self.db_handlers[db_idx].read_entry(idx_in_db)
         data_object.dataset_path = str(self.path)
         data_object.data_idx = idx
-
-        return self.transforms(data_object)
-
-    def connect_db(self, lmdb_path: Path | None = None) -> lmdb.Environment:
-        return lmdb.open(
-            str(lmdb_path),
-            subdir=False,
-            readonly=True,
-            lock=False,
-            readahead=True,
-            meminit=False,
-            max_readers=1,
-        )
-
-    def close_db(self) -> None:
-        if not self.path.is_file():
-            for env in self.envs:
-                env.close()
-        else:
-            self.env.close()
+        return data_object
