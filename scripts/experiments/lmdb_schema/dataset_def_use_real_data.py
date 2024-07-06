@@ -4,7 +4,7 @@ import numpy as np
 from torch_geometric.data import Data
 
 from enum import Enum
-import brotli
+import brotli # this dependency needs to be installed manually: pip install brotli
 import zlib
 import lzma
 import bz2
