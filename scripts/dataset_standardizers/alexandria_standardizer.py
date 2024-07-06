@@ -8,71 +8,63 @@ import pyarrow as pa # we are using pyarrow because of https://stackoverflow.com
 import pyarrow.parquet as pq
 from pymatgen.core.periodic_table import Element
 
-class AlexandriaDataset(DatasetDef):
+from abc import ABC, abstractmethod
+
+batch_size = 1000
+class DatasetStandardizer(ABC):
+    def __init__(self, schema):
+        self.schema = schema
+
+    def prepare_parquet_file(self, raw_data_dir, output_dir):
+        with pq.ParquetWriter(f"{output_dir}/dataset.parquet", self.schema) as writer:
+            for data in self.data_generator(batch_size, raw_data_dir):
+                table = pa.Table.from_pydict(data, schema=self.schema)
+
+                # Write the table chunk to the Parquet file
+                writer.write_table(table)
+
+    @abstractmethod
+    def data_generator(batch_size, raw_data_dir_path):
+        pass
+
+class AlexandriaStandardizer(DatasetStandardizer):
     def __init__(self):
-        super().__init__([
-                # NOTE: float64 is needed for the lattice. float32 is not enough.
-                # e.g. This number cannot fit in a float32 so we need to use float64.
-                # value = np.float32(6.23096541)
-                # print(value)
-                FieldDef("lattice", np.float64, DataShape.MATRIX_3x3),
-                FieldDef("frac_coords", np.float64, DataShape.MATRIX_nx3),
-                FieldDef("atomic_numbers", np.uint8, DataShape.VECTOR), # range is: [0, 255]
-                FieldDef("energy", np.float64, DataShape.SCALAR),
-            ])
-        
-    def raw_data_to_lmdb(self, raw_dataset_input_dir: str, lmdb_output_dir: str, max_entries_per_db = 1000000):
-        os.makedirs(lmdb_output_dir, exist_ok=True)
+        # NOTE: float64 is needed for the lattice. float32 is not enough.
+        # e.g. This number cannot fit in a float32 so we need to use float64.
+        # value = np.float32(6.23096541)
+        # print(value)
+        super().__init__(pa.schema([
+            ('lattice', pa.list_(pa.list_(pa.float64(), 3), 3)),
+            ('frac_coords', pa.list_(pa.list_(pa.float64(), 3))),
+            ('atomic_numbers', pa.list_(pa.uint8())),
+            ('energy', pa.float64()),
+        ]))
 
-        db = None
+    def data_generator(batch_size, raw_data_dir):
         # file_paths = sorted(glob.glob(f"{raw_dataset_input_dir}/*.json.bz2"))[4:] # use this to only process the last file
-        file_paths = sorted(glob.glob(f"{raw_dataset_input_dir}/*.json.bz2"))
-        assert len(file_paths) > 0, f"No files found in {raw_dataset_input_dir}"
-
+        file_paths = sorted(glob.glob(f"{raw_data_dir}/*.json.bz2"))
 
         for filepath in file_paths:
             with bz2.open(filepath, "rt", encoding="utf-8") as fh:
                 data = json.load(fh)
-                print(f"processing {filepath}")
-                for idx_in_file in tqdm(range(len(data["entries"]))):
-                    db = self._open_write_db(lmdb_output_dir, ith_db)
 
-                    entry = data["entries"][idx_in_file]
-                    self._parse_entry_and_save(db, entry, idx_in_db)
+                # Initialize lists to store each field
+                lattices = []
+                atomic_numbers = []
+                frac_coords = []
+                energies = []
 
-        # Create a PyArrow Table
-        table = pa.Table.from_arrays([pa_array1, pa_array2], names=['array1', 'array2'])
-
-        db.sync()
-        db.close()
-
-    def data_generator(batch_size, file_paths):
-        for filepath in file_paths:
-            with bz2.open(filepath, "rt", encoding="utf-8") as fh:
-                data = json.load(fh)
-
-                num_entries = len(data["entries"])
-                max_num_sites = max(len(entry["structure"]["sites"]) for entry in data["entries"])
-
-                # Initialize empty NumPy arrays with the appropriate shapes
-                lattices = np.empty((num_entries, 3, 3), dtype=np.float64)
-                atomic_numbers = np.empty((num_entries, max_num_sites), dtype=np.uint8)
-                frac_coords = np.empty((num_entries, max_num_sites, 3), dtype=np.float64)
-                energies = np.empty(num_entries, dtype=np.float64)
-
-                for i, entry in enumerate(tqdm(data["entries"])):
+                # Iterate through each entry
+                for entry in tqdm(data["entries"]):
                     structure = entry["structure"]
-                    
-                    lattices[i] = np.array(structure["lattice"]["matrix"], dtype=np.float64)
-                    
-                    num_sites = len(structure["sites"])
-                    atomic_numbers[i, :num_sites] = np.array([Element(site["label"]).Z for site in structure["sites"]], dtype=np.uint8)
-                    frac_coords[i, :num_sites, :] = np.array([site["abc"] for site in structure["sites"]], dtype=np.float64)
-                    
-                    # If there are fewer sites than the maximum, fill the rest with a placeholder, e.g., 0
-                    if num_sites < max_num_sites:
-                        atomic_numbers[i, num_sites:] = 0
-                        frac_coords[i, num_sites:, :] = 0.0
-                    
-                    energies[i] = np.float64(entry["energy"])
-                yield entry_data
+                    lattices.append(structure["lattice"]["matrix"])
+                    atomic_numbers.append([Element(site["label"]).Z for site in structure["sites"]])
+                    frac_coords.append([site["abc"] for site in structure["sites"]])
+                    energies.append(entry["energy"])
+
+                yield {
+                    "lattices": lattices,
+                    "atomic_numbers": atomic_numbers,
+                    "frac_coords": frac_coords,
+                    "energies": energies,
+                }
