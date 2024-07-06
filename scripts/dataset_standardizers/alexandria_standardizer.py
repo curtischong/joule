@@ -1,31 +1,13 @@
 import bz2
-import numpy as np
 import json
-import os
 import glob
 from tqdm import tqdm
-import pyarrow as pa # we are using pyarrow because of https://stackoverflow.com/questions/51361356/a-comparison-between-fastparquet-and-pyarrow
-import pyarrow.parquet as pq
 from pymatgen.core.periodic_table import Element
+import pyarrow as pa
 
-from abc import ABC, abstractmethod
+from dataset_standardizer import DatasetStandardizer
+from shared import data_dir
 
-batch_size = 1000
-class DatasetStandardizer(ABC):
-    def __init__(self, schema):
-        self.schema = schema
-
-    def prepare_parquet_file(self, raw_data_dir, output_dir):
-        with pq.ParquetWriter(f"{output_dir}/dataset.parquet", self.schema) as writer:
-            for data in self.data_generator(batch_size, raw_data_dir):
-                table = pa.Table.from_pydict(data, schema=self.schema)
-
-                # Write the table chunk to the Parquet file
-                writer.write_table(table)
-
-    @abstractmethod
-    def data_generator(batch_size, raw_data_dir_path):
-        pass
 
 class AlexandriaStandardizer(DatasetStandardizer):
     def __init__(self):
@@ -40,9 +22,10 @@ class AlexandriaStandardizer(DatasetStandardizer):
             ('energy', pa.float64()),
         ]))
 
-    def data_generator(batch_size, raw_data_dir):
-        # file_paths = sorted(glob.glob(f"{raw_dataset_input_dir}/*.json.bz2"))[4:] # use this to only process the last file
-        file_paths = sorted(glob.glob(f"{raw_data_dir}/*.json.bz2"))
+    def data_generator(self, raw_data_dir):
+        file_paths = sorted(glob.glob(f"{raw_data_dir}/*.json.bz2"))[4:] # use this to only process the last file
+        # file_paths = sorted(glob.glob(f"{raw_data_dir}/*.json.bz2"))
+        assert len(file_paths) > 0, f"No files found in {raw_data_dir}"
 
         for filepath in file_paths:
             with bz2.open(filepath, "rt", encoding="utf-8") as fh:
@@ -68,3 +51,9 @@ class AlexandriaStandardizer(DatasetStandardizer):
                     "frac_coords": frac_coords,
                     "energies": energies,
                 }
+
+def main():
+    AlexandriaStandardizer().prepare_parquet_file(raw_data_dir=f"{data_dir}/raw/alexandria", output_dir=f"{data_dir}/standardized/alexandria")
+
+if __name__ == "__main__":
+    main()
