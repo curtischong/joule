@@ -4,8 +4,8 @@ import pyarrow as pa # we are using pyarrow because of https://stackoverflow.com
 import os
 
 class DatasetStandardizer(ABC):
-    def __init__(self, schema):
-        self.schema = schema
+    def __init__(self, schema_fields: list[pa.Field]):
+        self.schema = pa.schema(schema_fields)
 
     def prepare_parquet_file(self, raw_data_dir, output_dir):
         os.makedirs(output_dir, exist_ok=True)

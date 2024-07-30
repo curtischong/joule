@@ -15,12 +15,12 @@ class AlexandriaStandardizer(DatasetStandardizer):
         # e.g. This number cannot fit in a float32 so we need to use float64.
         # value = np.float32(6.23096541)
         # print(value)
-        super().__init__(pa.schema([
-            ('lattice', pa.list_(pa.list_(pa.float64(), 3), 3)),
-            ('frac_coords', pa.list_(pa.list_(pa.float64(), 3))),
-            ('atomic_numbers', pa.list_(pa.uint8())),
-            ('energy', pa.float64()),
-        ]))
+        super().__init__([
+            pa.field('lattice', pa.list_(pa.list_(pa.float64(), 3), 3)),
+            pa.field('frac_coords', pa.list_(pa.list_(pa.float64(), 3))),
+            pa.field('atomic_numbers', pa.list_(pa.uint8())),
+            pa.field('energy', pa.float64()),
+        ])
 
     def data_generator(self, raw_data_dir):
         file_paths = sorted(glob.glob(f"{raw_data_dir}/*.json.bz2"))[4:] # use this to only process the last file
