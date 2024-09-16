@@ -69,7 +69,7 @@ huggingface-hub==0.23.3
 idna==3.7
 imageio==2.34.1
 importlib_metadata==7.1.0
-ipykernel==6.29.4
+ipykernel==6.29.5
 ipython==8.25.0
 ipython-genutils==0.2.0
 isoduration==20.11.0
