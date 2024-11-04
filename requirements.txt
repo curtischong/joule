@@ -188,7 +188,7 @@ s3transfer==0.10.1
 safetensors==0.4.3
 scikit-image==0.23.2
 scikit-learn==1.5.0
-scipy==1.13.1
+scipy==1.14.1
 Send2Trash==1.8.3
 sentinels==1.0.0
 sentry-sdk==2.5.1
