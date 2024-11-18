@@ -46,7 +46,7 @@ jobs:
 
       - if: ${{ matrix.python_version == '3.11' }}
         name: codecov-report
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           fail_ci_if_error: false # optional (default = false)
           files: ./coverage.xml
