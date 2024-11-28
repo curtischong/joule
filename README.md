@@ -1,3 +1,22 @@
+# Joule
+
+This is an equivariant neural network potential (using the escn architecture), and trained on a subset of the mace-mp-0 dataset.
+
+Here are the parameters of the training run (8 hours on an A100-80GB GPU)
+https://github.com/curtischong/joule/pull/45/files. I mainly performed this run to estimate how long it would take to train a full model that would be competitive on Matbench. Training was stopped early since it was a test. Also, I only trained the model on a subset of the full dataset (20 most "common" atoms). Results here: https://wandb.ai/curtischong/joule/workspace?nw=nwusercurtischong
+
+### Data prep
+- donwloaded data from https://drive.google.com/drive/folders/12RsjlEtSlBldhoQVJapfC9lIFZwpnVk6 (Note you need your own google drive credentials. put this inside a .json file under this path: scripts/dataset_download/credentials.json)
+
+- To train the model with the most amount of data but with only a small subset of atoms, I wrote a script to find the number of times each atom appeared in a single material (e.g. if hydrogen appeared 10 times in a material, then it would be counted as 1 - since that is one training example). view scripts/dataset_eda/mace/most_common_elements.py
+
+After I found the 20 elements that would yield the most training samples for the model, I ran scripts/dataset_prep/v1_format/create_real_mace_dataset_lmdb3.py to prep the dataset. Note: there were many exact duplicate systems between the train and validation datasets that this script removes)
+
+
+### Training
+
+Run make trainall to train the model on a GPU. In general, I used a subset of the alexandria dataset for local development, and used the mace-mp-0 dataset to train the real model on the A100 gpu.
+
 <h1 align="center"> <code>fairchem</code> by FAIR Chemistry </h1>
 
 <p align="center">
