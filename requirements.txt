@@ -43,7 +43,7 @@ dnspython==2.6.1
 docker-pycreds==0.4.0
 e3nn==0.5.1
 email_validator==2.1.1
-emmet-core==0.83.8
+emmet-core==0.84.4
 entrypoints==0.4
 executing==2.0.1
 fastapi==0.111.0
