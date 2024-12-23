@@ -141,7 +141,7 @@ opt-einsum==3.3.0
 opt-einsum-fx==0.1.4
 orjson==3.10.3
 overrides==7.7.0
-packaging==24.0
+packaging==24.2
 palettable==3.3.3
 pandas==2.2.2
 pandocfilters==1.5.1
