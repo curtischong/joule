@@ -45,7 +45,7 @@ e3nn==0.5.1
 email_validator==2.1.1
 emmet-core==0.83.8
 entrypoints==0.4
-executing==2.0.1
+executing==2.2.1
 fastapi==0.111.0
 fastapi-cli==0.0.4
 fastjsonschema==2.19.1
