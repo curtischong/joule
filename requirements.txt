@@ -99,7 +99,7 @@ kiwisolver==1.4.5
 latexcodec==3.0.0
 lazy_loader==0.4
 llvmlite==0.42.0
-lmdb==1.4.1
+lmdb==2.2.1
 maggma==0.67.0
 Markdown==3.6
 markdown-it-py==3.0.0
