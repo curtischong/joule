@@ -97,7 +97,7 @@ jupyterlab_server==2.27.2
 kaleido==0.2.1
 kiwisolver==1.4.5
 latexcodec==3.0.0
-lazy_loader==0.4
+lazy_loader==0.5
 llvmlite==0.42.0
 lmdb==1.4.1
 maggma==0.67.0
