@@ -146,7 +146,7 @@ palettable==3.3.3
 pandas==2.2.2
 pandocfilters==1.5.1
 paramiko==3.4.0
-parso==0.8.4
+parso==0.8.7
 pexpect==4.9.0
 pillow==10.3.0
 platformdirs==4.2.2
